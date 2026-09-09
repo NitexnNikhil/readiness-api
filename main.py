@@ -301,6 +301,9 @@ def build_display_context(context):
         or "TBD"
     )
 
+    growth_score = growth_area.get("score")
+    growth_score_text = f"{fmt_score(growth_score)} / 5" if growth_score is not None else None
+
     return {
         "display_name": candidate.get("name", "Candidate"),
         "candidate_id": candidate.get("candidate_id", ""),
@@ -313,7 +316,7 @@ def build_display_context(context):
         "skills": skills,
         "summary_dimensions": summary_dimensions,
         "pattern_dimensions": pattern_dimensions,
-        "growth_title": join_nonempty([growth_area.get("area"), f"{fmt_score(growth_area.get('score'))} / 5" if growth_area.get("score") is not None else "N/A / 5"]),
+        "growth_title": join_nonempty([growth_area.get("area"), growth_score_text]),
         "growth_body": ". ".join(
             part.rstrip(".")
             for part in [
