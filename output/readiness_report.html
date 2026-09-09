@@ -433,40 +433,85 @@
   </div>
 
   <p class="eyebrow">R E A D I N E S S&nbsp; P R O F I L E</p>
-  <h1 class="name">{{ display_name|e }}</h1>
-  <p class="subline">{{ profile_line|e }}</p>
+  <h1 class="name">Mayur Burale</h1>
+  <p class="subline">Information Technology · Graduated · Priyadarshini College of Engineering, Nagpur · Class of 2026</p>
 
   <div class="overall-label">OVERALL READINESS</div>
   <div class="overall-row">
     <div class="score-block">
-      <span class="score-number">{{ overall_score_text|e }}<span class="max"> / {{ scale_max_text|e }}</span></span><br>
-      <span class="pill">{{ overall_level|e }}</span>
+      <span class="score-number">4.25<span class="max"> / 5.0</span></span><br>
+      <span class="pill">HIGH READINESS</span>
     </div>
     <div class="dims">
-      {% for dim in summary_dimensions %}
+      
       <div class="dim-box">
-        <div class="val">{{ dim.score_text|e }}</div>
-        <div class="lab">{{ dim.label|e }}</div>
+        <div class="val">4</div>
+        <div class="lab">Learning agility</div>
       </div>
-      {% endfor %}
+      
+      <div class="dim-box">
+        <div class="val">4</div>
+        <div class="lab">Communication</div>
+      </div>
+      
+      <div class="dim-box">
+        <div class="val">4.4</div>
+        <div class="lab">Technical depth</div>
+      </div>
+      
+      <div class="dim-box">
+        <div class="val">4.5</div>
+        <div class="lab">Project readiness</div>
+      </div>
+      
     </div>
   </div>
 
-  <p class="summary-text">{{ overall_summary|e }}</p>
+  <p class="summary-text">Strong full-stack foundation with substantial project experience, REST API development, database expertise, and 250+ DSA problems solved.</p>
 
   <hr class="rule">
 
   <section>
-    <h2>01&nbsp; Skills, scored on evidence <span class="tag">{{ skills_tag|e }}</span></h2>
+    <h2>01&nbsp; Skills, scored on evidence <span class="tag">RESUME · 6 SKILLS · 2026-09-09</span></h2>
     <table class="skills">
       <tr><th>SKILL</th><th>SCORE 1 - 5</th><th>LEVEL</th></tr>
-      {% for skill in skills %}
+      
       <tr>
-        <td><b>{{ skill.name|e }}</b></td>
-        <td>{{ skill.score_text|e }}</td>
-        <td class="level">{{ skill.level|e }}</td>
+        <td><b>Programming proficiency</b></td>
+        <td>4.5</td>
+        <td class="level">ADVANCED</td>
       </tr>
-      {% endfor %}
+      
+      <tr>
+        <td><b>Databases &amp; SQL</b></td>
+        <td>4.5</td>
+        <td class="level">ADVANCED</td>
+      </tr>
+      
+      <tr>
+        <td><b>APIs &amp; web fundamentals</b></td>
+        <td>4.5</td>
+        <td class="level">ADVANCED</td>
+      </tr>
+      
+      <tr>
+        <td><b>DSA &amp; problem solving</b></td>
+        <td>4.5</td>
+        <td class="level">ADVANCED</td>
+      </tr>
+      
+      <tr>
+        <td><b>Version control &amp; testing</b></td>
+        <td>3.5</td>
+        <td class="level">STRONG</td>
+      </tr>
+      
+      <tr>
+        <td><b>OOP &amp; service design</b></td>
+        <td>4</td>
+        <td class="level">STRONG</td>
+      </tr>
+      
     </table>
     <p class="note">Scale: 1 emerging - 2 developing - 3 proficient - 4 strong - 5 advanced. Evidence for every score is on page 2.</p>
   </section>
@@ -478,12 +523,12 @@
     <div class="growth-row">
       <div class="growth-card">
         <div class="kicker">ACTIVE GROWTH AREA</div>
-        <div class="title">{{ growth_title|e }}</div>
-        <div class="body">{{ growth_body|e }}</div>
+        <div class="title">Testing and engineering quality practices · 2.5 / 5</div>
+        <div class="body">Strong development experience with an opportunity to strengthen testing and delivery discipline. Mayur has strong implementation and project experience, but explicit evidence of automated testing, CI/CD and systematic quality practices is limited</div>
       </div>
       <div class="reassess-card">
         <div class="kicker">RE-ASSESSMENT DUE</div>
-        <div class="title">{{ reassessment_due|e }}</div>
+        <div class="title">2026-12-01</div>
         <div class="foot">Scores are a point in time, not a fixed label.</div>
       </div>
     </div>
@@ -491,68 +536,150 @@
 
   <div class="report-footer">
     <span>HAVET AI · READINESS INTELLIGENCE</span>
-    <span>ASSESSED {{ footer_assessed|e }} · PROFILE {{ candidate_id|e }}</span>
+    <span>ASSESSED 2026-09-09 · RESUME · PROFILE CAND-002</span>
   </div>
 </div>
 
 <div class="page">
   <div class="report-header">
     <div class="brand">havet AI</div>
-    <div class="page-label">{{ display_name|e }} · 02 / 02</div>
+    <div class="page-label">Mayur Burale · 02 / 02</div>
   </div>
 
-  <h1 class="name" style="font-size:20px;">{{ display_name|e }} · Decision detail</h1>
-  <p class="decision-intro">{{ decision_intro|e }}</p>
+  <h1 class="name" style="font-size:20px;">Mayur Burale · Decision detail</h1>
+  <p class="decision-intro">Supporting detail for the recommendation on page 1: what was observed, what it means, and what should happen next.</p>
 
   <section>
-    <h2>03&nbsp; Role-specific evidence <span class="tag">Threshold: {{ threshold_score_text|e }} · {{ threshold_summary_text|e }}</span></h2>
+    <h2>03&nbsp; Role-specific evidence <span class="tag">Threshold: 3.5 / 5.0 · 6 of 6 at or above threshold</span></h2>
     <table class="evidence">
       <tr>
         <th>COMPETENCY</th><th>SCORE</th><th>READINESS</th><th>EVIDENCE</th><th>IMPLICATION</th>
       </tr>
-      {% for row in evidence_rows %}
+      
       <tr>
-        <td class="competency">{{ row.name|e }}</td>
-        <td class="score">{{ row.score_text|e }}</td>
-        <td class="readiness {{ row.readiness_class|e }}">{{ row.readiness_text|e }}</td>
-        <td class="evidence-col">{{ row.evidence_text|e }}</td>
-        <td class="implication">{{ row.implication_text|e }}</td>
+        <td class="competency">Programming proficiency</td>
+        <td class="score">4.5</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">Java, C, C++, JavaScript and TypeScript; Multiple full-stack applications; Current full-stack development internship</td>
+        <td class="implication">Supporting signal for the report.</td>
       </tr>
-      {% endfor %}
+      
+      <tr>
+        <td class="competency">Databases &amp; SQL</td>
+        <td class="score">4.5</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">SQL, MySQL, MongoDB and PostgreSQL; Database integration across multiple projects; JDBC-based hospital management system</td>
+        <td class="implication">Supporting signal for the report.</td>
+      </tr>
+      
+      <tr>
+        <td class="competency">APIs &amp; web fundamentals</td>
+        <td class="score">4.5</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">6+ RESTful API endpoints; Node.js, Express.js and Spring Boot; Authentication and frontend-backend integration; API-driven full-stack projects</td>
+        <td class="implication">Supporting signal for the report.</td>
+      </tr>
+      
+      <tr>
+        <td class="competency">DSA &amp; problem solving</td>
+        <td class="score">4.5</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">250+ DSA problems solved; LeetCode, GeeksforGeeks and HackerRank practice; DSA certification</td>
+        <td class="implication">Supporting signal for the report.</td>
+      </tr>
+      
+      <tr>
+        <td class="competency">Version control &amp; testing</td>
+        <td class="score">3.5</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">Git and GitHub; Postman and Hoppscotch; Agile development experience</td>
+        <td class="implication">Should be validated during technical assessment.</td>
+      </tr>
+      
+      <tr>
+        <td class="competency">OOP &amp; service design</td>
+        <td class="score">4</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">OOP principles used in Java project; Spring and Spring Boot experience; Backend and full-stack architecture experience; Scalable serverless architecture project</td>
+        <td class="implication">Supporting signal for the report.</td>
+      </tr>
+      
     </table>
   </section>
 
   <section>
     <h2 style="margin-top:22px;">04&nbsp; Readiness pattern <span class="tag">Supporting context across key dimensions</span></h2>
     <div class="pattern-row">
-      {% for dim in pattern_dimensions %}
+      
       <div class="pattern-box">
-        <div class="val">{{ dim.score_text|e }}</div>
-        <div class="lab">{{ dim.label|e }}</div>
-        <div class="sub">{{ dim.level|e }}</div>
+        <div class="val">4.4</div>
+        <div class="lab">Technical fundamentals</div>
+        <div class="sub">ADVANCED</div>
       </div>
-      {% endfor %}
+      
+      <div class="pattern-box">
+        <div class="val">4.5</div>
+        <div class="lab">Project readiness</div>
+        <div class="sub">ADVANCED</div>
+      </div>
+      
+      <div class="pattern-box">
+        <div class="val">4</div>
+        <div class="lab">Learning agility</div>
+        <div class="sub">STRONG</div>
+      </div>
+      
+      <div class="pattern-box">
+        <div class="val">4</div>
+        <div class="lab">Communication</div>
+        <div class="sub">STRONG</div>
+      </div>
+      
+      <div class="pattern-box">
+        <div class="val">4.5</div>
+        <div class="lab">Role fit</div>
+        <div class="sub">ADVANCED</div>
+      </div>
+      
     </div>
   </section>
 
   <section>
     <h2 style="margin-top:14px;">05&nbsp; Next best action <span class="tag">Turn the gap into proof</span></h2>
     <div class="action-row">
-      {% for card in action_cards %}
-      {% if card.kind == 'gate' %}
-      <div class="gate-box">
-        <div class="tag">{{ card.tag|e }}</div>
-        <div class="title">{{ card.title|e }}</div>
-        <div class="threshold">{{ card.threshold|e }}</div>
-      </div>
-      {% else %}
+      
+      
       <div class="action-box">
-        <div class="tag">{{ card.tag|e }}</div>
-        <div class="title">{{ card.title|e }}</div>
-        <div class="body">{{ card.body|e }}</div>
+        <div class="tag">NOW</div>
+        <div class="title">Build and deploy a production-style full-stack application with automated tests and CI/CD</div>
+        <div class="body">Converts strong project and development experience into stronger evidence of production engineering ownership.</div>
       </div>
-      {% endif %}
-      {% endfor %}
+      
+      
+      
+      <div class="action-box">
+        <div class="tag">WHY</div>
+        <div class="title">Testing and engineering quality practices</div>
+        <div class="body">Strong development experience with an opportunity to strengthen testing and delivery discipline.</div>
+      </div>
+      
+      
+      
+      <div class="action-box">
+        <div class="tag">EXPECTED OUTCOME</div>
+        <div class="title">Demonstrable end-to-end engineering workflow covering development, testing, deployment and maintenance.</div>
+        <div class="body">Resume demonstrates strong full-stack, backend, database and problem-solving capabilities. Direct technical assessment should validate coding, system design and engineering practices.</div>
+      </div>
+      
+      
+      
+      <div class="gate-box">
+        <div class="tag">SUCCESS GATE</div>
+        <div class="title">Testing &amp; engineering practices</div>
+        <div class="threshold">≥ 3.5 / 5.0</div>
+      </div>
+      
+      
     </div>
   </section>
 
@@ -561,7 +688,7 @@
     <div class="decision-box">
       <div class="left">
         <div class="kicker">PROCEED WITH A STRUCTURED PATHWAY</div>
-        <div class="headline">{{ decision_headline|e }}</div>
+        <div class="headline">PROCEED TO TECHNICAL SCREEN</div>
       </div>
       <div class="right">
         <div class="label">RESPONSIBLE USE</div>
@@ -576,18 +703,18 @@
       </div>
       <div class="col">
         <h3>ASSESSMENT</h3>
-        <p>{{ footer_assessed|e }} · mock drive 2 + panel round. Re-assessment due Dec 2026.</p>
+        <p>2026-09-09 · RESUME · mock drive 2 + panel round. Re-assessment due Dec 2026.</p>
       </div>
       <div class="col">
         <h3>SOURCE RECORDS</h3>
-        <p>{{ source_record|e }} · RR-2026-0418.</p>
+        <p>CAND-002 · RR-2026-0418.</p>
       </div>
     </div>
   </section>
 
   <div class="report-footer">
-    <span>ASSESSMENT · {{ footer_assessed|e }} · Reassessment due {{ reassessment_due|e }}</span>
-    <span>SOURCE RECORDS · {{ source_record|e }}</span>
+    <span>ASSESSMENT · 2026-09-09 · RESUME · Reassessment due 2026-12-01</span>
+    <span>SOURCE RECORDS · CAND-002</span>
   </div>
 </div>
 
