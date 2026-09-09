@@ -149,22 +149,29 @@ def build_display_context(context):
     overall_summary = overall.get("summary") or candidate.get("profile_summary") or "Readiness summary unavailable."
     overall_score_text = fmt_score(overall.get("score"))
 
-    summary_dimension_keys = [
-        ("technical_fundamentals", "Technical fundamentals"),
-        ("project_readiness", "Project readiness"),
-        ("learning_agility", "Learning agility"),
-        ("role_fit", "Role fit"),
+    communication_dimension = context.get("communication") or {}
+    summary_dimensions = [
+        {
+            "label": "Learning agility",
+            "score_text": fmt_score(dimensions.get("learning_agility", {}).get("score")),
+            "level": dimensions.get("learning_agility", {}).get("level") or get_level(dimensions.get("learning_agility", {}).get("score")),
+        },
+        {
+            "label": "Communication",
+            "score_text": fmt_score(communication_dimension.get("score")),
+            "level": communication_dimension.get("level") or get_level(communication_dimension.get("score")),
+        },
+        {
+            "label": "Technical depth",
+            "score_text": fmt_score(dimensions.get("technical_fundamentals", {}).get("score")),
+            "level": dimensions.get("technical_fundamentals", {}).get("level") or get_level(dimensions.get("technical_fundamentals", {}).get("score")),
+        },
+        {
+            "label": "Project readiness",
+            "score_text": fmt_score(dimensions.get("project_readiness", {}).get("score")),
+            "level": dimensions.get("project_readiness", {}).get("level") or get_level(dimensions.get("project_readiness", {}).get("score")),
+        },
     ]
-    summary_dimensions = []
-    for key, label in summary_dimension_keys:
-        dimension = dimensions.get(key, {})
-        summary_dimensions.append(
-            {
-                "label": label,
-                "score_text": fmt_score(dimension.get("score")),
-                "level": dimension.get("level") or get_level(dimension.get("score")),
-            }
-        )
 
     pattern_dimension_keys = [
         ("technical_fundamentals", "Technical fundamentals"),
@@ -175,7 +182,10 @@ def build_display_context(context):
     ]
     pattern_dimensions = []
     for key, label in pattern_dimension_keys:
-        dimension = dimensions.get(key, {})
+        if key == "communication":
+            dimension = context.get("communication") or dimensions.get(key, {})
+        else:
+            dimension = dimensions.get(key, {})
         pattern_dimensions.append(
             {
                 "label": label,
@@ -787,6 +797,7 @@ async def generate_readiness_report(
         "candidate_view": candidate_view,
         "tpo_view": tpo_view,
         "recruiter_view": persona.get("recruiter_employer_view", {}),
+        "communication": common.get("communication", {}),
         "common_threshold": 3.0,
     }
 

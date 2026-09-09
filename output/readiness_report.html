@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Candidate Readiness Report - Template</title>
+<style>
+  :root{
+    --ink:#0B1220;
+    --ink-soft:#1F2937;
+    --text:#111827;
+    --subtext:#4B5563;
+    --muted:#9CA3AF;
+    --line:#E5E7EB;
+    --panel:#F4F5F7;
+    --panel-2:#EFF1F4;
+    --accent:#146C5B;
+    --accent-bg:#E7F2EF;
+    --amber:#B45309;
+    --amber-bg:#FDF0DF;
+    --white:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:#e9eaee;
+    font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color:var(--text);
+  }
+  .page{
+    width:816px;
+    min-height:1056px;
+    margin:24px auto;
+    background:#fff;
+    padding:40px;
+    position:relative;
+    box-shadow:0 0 0 1px var(--line);
+  }
+  .page + .page{ page-break-before: always; }
+
+  .report-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    border-bottom:1px solid var(--line);
+    padding-bottom:10px;
+    margin-bottom:26px;
+  }
+  .report-header .brand{ font-weight:700; font-size:14px; color:var(--ink); }
+  .report-header .page-label{ font-size:10px; color:var(--subtext); letter-spacing:.02em; }
+
+  .report-footer{
+    position:absolute;
+    left:40px; right:40px; bottom:28px;
+    border-top:1px solid var(--line);
+    padding-top:10px;
+    display:flex;
+    justify-content:space-between;
+    font-size:8.5px;
+    color:var(--muted);
+    letter-spacing:.02em;
+  }
+
+  .eyebrow{
+    font-size:10px;
+    letter-spacing:.18em;
+    color:var(--subtext);
+    margin:0 0 6px;
+  }
+  h1.name{
+    font-size:26px;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  .subline{
+    font-size:11px;
+    color:var(--subtext);
+    margin:0 0 26px;
+  }
+
+  .overall-label{
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.04em;
+    color:var(--ink);
+    margin-bottom:14px;
+  }
+  .overall-row{
+    display:flex;
+    align-items:flex-start;
+    gap:16px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .score-block{ min-width:150px; }
+  .score-number{
+    font-size:44px;
+    font-weight:700;
+    color:var(--ink);
+    line-height:1;
+  }
+  .score-number .max{
+    font-size:18px;
+    font-weight:400;
+    color:var(--subtext);
+  }
+  .pill{
+    display:inline-block;
+    margin-top:10px;
+    padding:4px 14px;
+    border-radius:12px;
+    background:var(--accent-bg);
+    color:var(--accent);
+    font-size:10px;
+    font-weight:700;
+  }
+  .dims{
+    display:flex;
+    gap:10px;
+    flex:1;
+    flex-wrap:wrap;
+  }
+  .dim-box{
+    background:var(--panel);
+    border-radius:6px;
+    padding:12px 12px 10px;
+    flex:1;
+    min-width:100px;
+  }
+  .dim-box .val{ font-size:17px; font-weight:700; color:var(--ink); }
+  .dim-box .lab{ font-size:9px; color:var(--subtext); margin-top:4px; }
+
+  .summary-text{
+    font-size:11px;
+    line-height:1.5;
+    color:var(--text);
+    max-width:65%;
+    margin-bottom:26px;
+  }
+
+  hr.rule{
+    border:none;
+    border-top:1px solid var(--line);
+    margin:22px 0;
+  }
+
+  section h2{
+    font-size:13px;
+    color:var(--ink);
+    margin:0 0 2px;
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-weight:700;
+  }
+  section h2 .tag{
+    font-size:8.5px;
+    font-weight:400;
+    letter-spacing:.05em;
+    color:var(--muted);
+    text-transform:uppercase;
+  }
+
+  table.skills{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:14px;
+    font-size:10.5px;
+  }
+  table.skills th{
+    text-align:left;
+    font-size:8.5px;
+    color:var(--muted);
+    letter-spacing:.04em;
+    font-weight:700;
+    border-bottom:1px solid var(--line);
+    padding-bottom:6px;
+  }
+  table.skills td{
+    padding:9px 0;
+    border-bottom:1px solid #F0F1F3;
+  }
+  table.skills td.level{ font-weight:700; }
+  .note{
+    font-size:8.5px;
+    color:var(--muted);
+    margin-top:8px;
+  }
+
+  .growth-row{
+    display:flex;
+    gap:16px;
+    margin-top:14px;
+  }
+  .growth-card{
+    flex:0 0 62%;
+    background:var(--panel);
+    border-radius:8px;
+    padding:16px;
+  }
+  .growth-card .kicker{
+    font-size:8.5px;
+    font-weight:700;
+    letter-spacing:.05em;
+    color:var(--amber);
+    margin-bottom:8px;
+  }
+  .growth-card .title{
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .growth-card .body{
+    font-size:9.5px;
+    color:var(--subtext);
+    line-height:1.5;
+  }
+  .reassess-card{
+    flex:1;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:16px;
+  }
+  .reassess-card .kicker{
+    font-size:8.5px;
+    font-weight:700;
+    letter-spacing:.05em;
+    color:var(--subtext);
+    margin-bottom:8px;
+  }
+  .reassess-card .title{
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .reassess-card .foot{
+    font-size:8.5px;
+    color:var(--muted);
+    font-style:italic;
+  }
+
+  .decision-intro{
+    font-size:10px;
+    color:var(--subtext);
+    line-height:1.5;
+    max-width:90%;
+    margin-bottom:20px;
+  }
+  table.evidence{
+    width:100%;
+    border-collapse:collapse;
+    font-size:9px;
+    margin-top:12px;
+  }
+  table.evidence th{
+    text-align:left;
+    font-size:8px;
+    color:var(--muted);
+    letter-spacing:.03em;
+    font-weight:700;
+    border-bottom:1px solid var(--line);
+    padding-bottom:6px;
+  }
+  table.evidence td{
+    vertical-align:top;
+    padding:10px 8px 10px 0;
+    border-bottom:1px solid #F0F1F3;
+    line-height:1.4;
+  }
+  table.evidence td.competency{ font-weight:700; width:16%; }
+  table.evidence td.score{ width:7%; font-weight:700; }
+  table.evidence td.readiness{ width:11%; font-weight:700; color:var(--accent); }
+  table.evidence td.readiness.at-bar{ color:var(--amber); }
+  table.evidence td.evidence-col{ width:33%; color:var(--subtext); }
+  table.evidence td.implication{ color:var(--subtext); }
+
+  .pattern-row{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+  }
+  .pattern-box{
+    flex:1;
+    background:var(--panel-2);
+    border-radius:6px;
+    padding:12px 10px;
+  }
+  .pattern-box .val{ font-size:15px; font-weight:700; color:var(--ink); }
+  .pattern-box .lab{ font-size:8px; color:var(--subtext); margin-top:6px; }
+  .pattern-box .sub{ font-size:7.5px; color:var(--muted); font-style:italic; margin-top:16px; }
+
+  .action-row{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+  }
+  .action-box{
+    flex:1;
+    background:var(--panel);
+    border-radius:6px;
+    padding:12px;
+  }
+  .action-box .tag{ font-size:7.5px; font-weight:700; letter-spacing:.04em; color:var(--accent); margin-bottom:6px; }
+  .action-box .title{ font-size:10px; font-weight:700; color:var(--ink); margin-bottom:6px; }
+  .action-box .body{ font-size:8px; color:var(--subtext); line-height:1.4; }
+  .gate-box{
+    flex:1;
+    background:var(--accent-bg);
+    border-radius:6px;
+    padding:12px;
+  }
+  .gate-box .tag{ font-size:7.5px; font-weight:700; letter-spacing:.04em; color:var(--accent); margin-bottom:6px; }
+  .gate-box .title{ font-size:10.5px; font-weight:700; color:var(--ink); margin-bottom:10px; }
+  .gate-box .threshold{ font-size:13px; font-weight:700; color:var(--accent); }
+
+  .decision-box{
+    background:var(--ink);
+    color:#fff;
+    border-radius:8px;
+    padding:14px 18px;
+    margin-top:14px;
+  }
+  .decision-box .headline{ font-size:14px; font-weight:700; }
+  .decision-box .sub{ font-size:9.5px; color:#D1D5DB; margin-top:6px; }
+
+  .closing-cols{
+    display:flex;
+    gap:24px;
+    margin-top:18px;
+  }
+  .closing-cols .col{ flex:1; }
+  .closing-cols h3{
+    font-size:9px;
+    letter-spacing:.03em;
+    color:var(--subtext);
+    margin:0 0 6px;
+  }
+  .closing-cols p{
+    font-size:8.5px;
+    color:var(--subtext);
+    line-height:1.5;
+    margin:0;
+  }
+
+  input[type=text], textarea{
+    font-family:inherit;
+    border:none;
+    border-bottom:1px dashed #C7CBD1;
+    background:transparent;
+    color:var(--text);
+    width:100%;
+    font-size:inherit;
+  }
+  textarea{ resize:vertical; }
+
+  @page{
+    size: letter;
+    margin: 0;
+  }
+
+  @media print{
+    html, body{
+      background:#fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page{
+      margin:0;
+      box-shadow:none;
+      break-after: page;
+      page-break-after: always;
+    }
+    .page:last-child{
+      break-after: auto;
+      page-break-after: auto;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="report-header">
+    <div class="brand">havet AI</div>
+    <div class="page-label">CANDIDATE READINESS REPORT · 01 / 02</div>
+  </div>
+
+  <p class="eyebrow">R E A D I N E S S&nbsp; P R O F I L E</p>
+  <h1 class="name">Mayur Burale</h1>
+  <p class="subline">Information Technology · Graduated · Priyadarshini College of Engineering, Nagpur · Class of 2026</p>
+
+  <div class="overall-label">OVERALL READINESS</div>
+  <div class="overall-row">
+    <div class="score-block">
+      <span class="score-number">4.25<span class="max"> / 5.0</span></span><br>
+      <span class="pill">HIGH READINESS</span>
+    </div>
+    <div class="dims">
+      
+      <div class="dim-box">
+        <div class="val">4</div>
+        <div class="lab">Learning agility</div>
+      </div>
+      
+      <div class="dim-box">
+        <div class="val">4</div>
+        <div class="lab">Communication</div>
+      </div>
+      
+      <div class="dim-box">
+        <div class="val">4.4</div>
+        <div class="lab">Technical depth</div>
+      </div>
+      
+      <div class="dim-box">
+        <div class="val">4.5</div>
+        <div class="lab">Project readiness</div>
+      </div>
+      
+    </div>
+  </div>
+
+  <p class="summary-text">Strong full-stack foundation with substantial project experience, REST API development, database expertise, and 250+ DSA problems solved.</p>
+
+  <hr class="rule">
+
+  <section>
+    <h2>01&nbsp; Skills, scored on evidence <span class="tag">RESUME · 6 SKILLS · 2026-09-09</span></h2>
+    <table class="skills">
+      <tr><th>SKILL</th><th>SCORE 1 - 5</th><th>LEVEL</th></tr>
+      
+      <tr>
+        <td><b>Programming proficiency</b></td>
+        <td>4.5</td>
+        <td class="level">ADVANCED</td>
+      </tr>
+      
+      <tr>
+        <td><b>Databases &amp; SQL</b></td>
+        <td>4.5</td>
+        <td class="level">ADVANCED</td>
+      </tr>
+      
+      <tr>
+        <td><b>APIs &amp; web fundamentals</b></td>
+        <td>4.5</td>
+        <td class="level">ADVANCED</td>
+      </tr>
+      
+      <tr>
+        <td><b>DSA &amp; problem solving</b></td>
+        <td>4.5</td>
+        <td class="level">ADVANCED</td>
+      </tr>
+      
+      <tr>
+        <td><b>Version control &amp; testing</b></td>
+        <td>3.5</td>
+        <td class="level">STRONG</td>
+      </tr>
+      
+      <tr>
+        <td><b>OOP &amp; service design</b></td>
+        <td>4</td>
+        <td class="level">STRONG</td>
+      </tr>
+      
+    </table>
+    <p class="note">Scale: 1 emerging - 2 developing - 3 proficient - 4 strong - 5 advanced. Evidence for every score is on page 2.</p>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <h2>02&nbsp; What they are building next</h2>
+    <div class="growth-row">
+      <div class="growth-card">
+        <div class="kicker">ACTIVE GROWTH AREA</div>
+        <div class="title">Testing and engineering quality practices · N/A / 5</div>
+        <div class="body">Strong development experience with an opportunity to strengthen testing and delivery discipline. Mayur has strong implementation and project experience, but explicit evidence of automated testing, CI/CD and systematic quality practices is limited</div>
+      </div>
+      <div class="reassess-card">
+        <div class="kicker">RE-ASSESSMENT DUE</div>
+        <div class="title">TBD</div>
+        <div class="foot">Scores are a point in time, not a fixed label.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="report-footer">
+    <span>HAVET AI · READINESS INTELLIGENCE</span>
+    <span>ASSESSED 2026-09-09 · RESUME · PROFILE CAND-002</span>
+  </div>
+</div>
+
+<div class="page">
+  <div class="report-header">
+    <div class="brand">havet AI</div>
+    <div class="page-label">Mayur Burale · 02 / 02</div>
+  </div>
+
+  <h1 class="name" style="font-size:20px;">Mayur Burale · Decision detail</h1>
+  <p class="decision-intro">Supporting detail for the recommendation on page 1: what was observed, what it means, and what should happen next.</p>
+
+  <section>
+    <h2>03&nbsp; Role-specific evidence <span class="tag">Threshold: 3.5 / 5.0 · 6 of 6 at or above threshold</span></h2>
+    <table class="evidence">
+      <tr>
+        <th>COMPETENCY</th><th>SCORE</th><th>READINESS</th><th>EVIDENCE</th><th>IMPLICATION</th>
+      </tr>
+      
+      <tr>
+        <td class="competency">Programming proficiency</td>
+        <td class="score">4.5</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">Java, C, C++, JavaScript and TypeScript; Multiple full-stack applications; Current full-stack development internship</td>
+        <td class="implication">Supporting signal for the report.</td>
+      </tr>
+      
+      <tr>
+        <td class="competency">Databases &amp; SQL</td>
+        <td class="score">4.5</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">SQL, MySQL, MongoDB and PostgreSQL; Database integration across multiple projects; JDBC-based hospital management system</td>
+        <td class="implication">Supporting signal for the report.</td>
+      </tr>
+      
+      <tr>
+        <td class="competency">APIs &amp; web fundamentals</td>
+        <td class="score">4.5</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">6+ RESTful API endpoints; Node.js, Express.js and Spring Boot; Authentication and frontend-backend integration; API-driven full-stack projects</td>
+        <td class="implication">Supporting signal for the report.</td>
+      </tr>
+      
+      <tr>
+        <td class="competency">DSA &amp; problem solving</td>
+        <td class="score">4.5</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">250+ DSA problems solved; LeetCode, GeeksforGeeks and HackerRank practice; DSA certification</td>
+        <td class="implication">Supporting signal for the report.</td>
+      </tr>
+      
+      <tr>
+        <td class="competency">Version control &amp; testing</td>
+        <td class="score">3.5</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">Git and GitHub; Postman and Hoppscotch; Agile development experience</td>
+        <td class="implication">Should be validated during technical assessment.</td>
+      </tr>
+      
+      <tr>
+        <td class="competency">OOP &amp; service design</td>
+        <td class="score">4</td>
+        <td class="readiness ">READY</td>
+        <td class="evidence-col">OOP principles used in Java project; Spring and Spring Boot experience; Backend and full-stack architecture experience; Scalable serverless architecture project</td>
+        <td class="implication">Supporting signal for the report.</td>
+      </tr>
+      
+    </table>
+  </section>
+
+  <section>
+    <h2 style="margin-top:22px;">04&nbsp; Readiness pattern <span class="tag">Supporting context across key dimensions</span></h2>
+    <div class="pattern-row">
+      
+      <div class="pattern-box">
+        <div class="val">4.4</div>
+        <div class="lab">Technical fundamentals</div>
+        <div class="sub">ADVANCED</div>
+      </div>
+      
+      <div class="pattern-box">
+        <div class="val">4.5</div>
+        <div class="lab">Project readiness</div>
+        <div class="sub">ADVANCED</div>
+      </div>
+      
+      <div class="pattern-box">
+        <div class="val">4</div>
+        <div class="lab">Learning agility</div>
+        <div class="sub">STRONG</div>
+      </div>
+      
+      <div class="pattern-box">
+        <div class="val">4</div>
+        <div class="lab">Communication</div>
+        <div class="sub">STRONG</div>
+      </div>
+      
+      <div class="pattern-box">
+        <div class="val">4.5</div>
+        <div class="lab">Role fit</div>
+        <div class="sub">ADVANCED</div>
+      </div>
+      
+    </div>
+  </section>
+
+  <section>
+    <h2 style="margin-top:22px;">05&nbsp; Next best action <span class="tag">Turn the gap into proof</span></h2>
+    <div class="action-row">
+      
+      
+      <div class="action-box">
+        <div class="tag">NOW</div>
+        <div class="title">Build and deploy a production-style full-stack application with automated tests and CI/CD</div>
+        <div class="body">Converts strong project and development experience into stronger evidence of production engineering ownership.</div>
+      </div>
+      
+      
+      
+      <div class="action-box">
+        <div class="tag">WHY</div>
+        <div class="title">Testing and engineering quality practices</div>
+        <div class="body">Strong development experience with an opportunity to strengthen testing and delivery discipline.</div>
+      </div>
+      
+      
+      
+      <div class="action-box">
+        <div class="tag">EXPECTED OUTCOME</div>
+        <div class="title">Demonstrable end-to-end engineering workflow covering development, testing, deployment and maintenance.</div>
+        <div class="body">Resume demonstrates strong full-stack, backend, database and problem-solving capabilities. Direct technical assessment should validate coding, system design and engineering practices.</div>
+      </div>
+      
+      
+      
+      <div class="gate-box">
+        <div class="tag">SUCCESS GATE</div>
+        <div class="title">Testing &amp; engineering practices</div>
+        <div class="threshold">≥ 3.5 / 5.0</div>
+      </div>
+      
+      
+    </div>
+  </section>
+
+  <section>
+    <h2 style="margin-top:22px;">06&nbsp; Final decision <span class="tag">Keep the human decision visible</span></h2>
+    <div class="decision-box">
+      <div class="headline">PROCEED TO TECHNICAL SCREEN</div>
+      <div class="sub">Resume demonstrates strong full-stack, backend, database and problem-solving capabilities. Direct technical assessment should validate coding, system design and engineering practices.</div>
+    </div>
+
+    <div class="closing-cols">
+      <div class="col">
+        <h3>RESPONSIBLE USE</h3>
+        <p>This is contextual decision support, not a permanent label or guarantee. Keep human review, consent, and evidence provenance visible.</p>
+      </div>
+      <div class="col">
+        <h3>EVIDENCE PROVENANCE</h3>
+        <p>RESUME · 2026-09-09 · CAND-002</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="report-footer">
+    <span>ASSESSMENT · 2026-09-09 · RESUME · Reassessment due TBD</span>
+    <span>SOURCE RECORDS · CAND-002</span>
+  </div>
+</div>
+
+</body>
+</html>
