@@ -96,6 +96,19 @@ def join_nonempty(parts, separator=" · "):
     return separator.join(cleaned)
 
 
+def short_display_name(full_name):
+    if not full_name:
+        return "Candidate"
+
+    parts = str(full_name).split()
+    if len(parts) == 1:
+        return parts[0]
+
+    first_name = parts[0]
+    last_initial = parts[-1][0].upper() + "."
+    return f"{first_name} {last_initial}"
+
+
 def find_browser_executable():
     candidates = [
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -305,7 +318,7 @@ def build_display_context(context):
     growth_score_text = f"{fmt_score(growth_score)} / 5" if growth_score is not None else None
 
     return {
-        "display_name": candidate.get("name", "Candidate"),
+        "display_name": short_display_name(candidate.get("name", "Candidate")),
         "candidate_id": candidate.get("candidate_id", ""),
         "profile_line": profile_line,
         "overall_score_text": overall_score_text,
