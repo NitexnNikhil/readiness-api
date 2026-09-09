@@ -292,38 +292,83 @@
   .pattern-box .sub{ font-size:7.5px; color:var(--muted); font-style:italic; margin-top:16px; }
 
   .action-row{
-    display:flex;
-    gap:10px;
-    margin-top:14px;
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:6px;
+    margin-top:8px;
   }
   .action-box{
     flex:1;
     background:var(--panel);
     border-radius:6px;
-    padding:12px;
+    padding:7px 8px;
   }
-  .action-box .tag{ font-size:7.5px; font-weight:700; letter-spacing:.04em; color:var(--accent); margin-bottom:6px; }
-  .action-box .title{ font-size:10px; font-weight:700; color:var(--ink); margin-bottom:6px; }
-  .action-box .body{ font-size:8px; color:var(--subtext); line-height:1.4; }
+  .action-box .tag{ font-size:6.5px; font-weight:700; letter-spacing:.04em; color:var(--accent); margin-bottom:3px; }
+  .action-box .title{ font-size:8px; font-weight:700; color:var(--ink); margin-bottom:3px; line-height:1.15; }
+  .action-box .body{ font-size:7px; color:var(--subtext); line-height:1.2; }
   .gate-box{
     flex:1;
     background:var(--accent-bg);
     border-radius:6px;
-    padding:12px;
+    padding:7px 8px;
   }
-  .gate-box .tag{ font-size:7.5px; font-weight:700; letter-spacing:.04em; color:var(--accent); margin-bottom:6px; }
-  .gate-box .title{ font-size:10.5px; font-weight:700; color:var(--ink); margin-bottom:10px; }
-  .gate-box .threshold{ font-size:13px; font-weight:700; color:var(--accent); }
+  .gate-box .tag{ font-size:6.5px; font-weight:700; letter-spacing:.04em; color:var(--accent); margin-bottom:3px; }
+  .gate-box .title{ font-size:8px; font-weight:700; color:var(--ink); margin-bottom:4px; line-height:1.15; }
+  .gate-box .threshold{ font-size:10px; font-weight:700; color:var(--accent); }
 
   .decision-box{
-    background:var(--ink);
+    background:var(--accent);
     color:#fff;
-    border-radius:8px;
-    padding:14px 18px;
-    margin-top:14px;
+    border-radius:14px;
+    padding:12px 14px;
+    margin-top:8px;
+    display:grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap:12px;
+    align-items:stretch;
   }
-  .decision-box .headline{ font-size:14px; font-weight:700; }
-  .decision-box .sub{ font-size:9.5px; color:#D1D5DB; margin-top:6px; }
+  .decision-box .left{
+    padding-right:18px;
+    border-right:1px solid rgba(255,255,255,.28);
+  }
+  .decision-box .kicker{
+    font-size:8px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:#CDE6DD;
+    margin-bottom:6px;
+  }
+  .decision-box .headline{ font-size:13px; line-height:1.12; font-weight:700; }
+  .decision-box .right .label{
+    font-size:8px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:#CDE6DD;
+    margin-bottom:6px;
+  }
+  .decision-box .sub{ font-size:8px; line-height:1.28; color:#E1ECE7; margin:0; }
+
+  .decision-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap:10px;
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid var(--line);
+  }
+  .decision-grid .col h3{
+    font-size:7px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 6px;
+  }
+  .decision-grid .col p{
+    font-size:7.5px;
+    line-height:1.25;
+    color:var(--subtext);
+    margin:0;
+  }
 
   .closing-cols{
     display:flex;
@@ -600,7 +645,7 @@
   </section>
 
   <section>
-    <h2 style="margin-top:22px;">05&nbsp; Next best action <span class="tag">Turn the gap into proof</span></h2>
+    <h2 style="margin-top:14px;">05&nbsp; Next best action <span class="tag">Turn the gap into proof</span></h2>
     <div class="action-row">
       
       
@@ -639,20 +684,30 @@
   </section>
 
   <section>
-    <h2 style="margin-top:22px;">06&nbsp; Final decision <span class="tag">Keep the human decision visible</span></h2>
+    <h2 style="margin-top:14px;">06&nbsp; Final decision <span class="tag">Keep the human decision visible</span></h2>
     <div class="decision-box">
-      <div class="headline">PROCEED TO TECHNICAL SCREEN</div>
-      <div class="sub">Resume demonstrates strong full-stack, backend, database and problem-solving capabilities. Direct technical assessment should validate coding, system design and engineering practices.</div>
+      <div class="left">
+        <div class="kicker">PROCEED WITH A STRUCTURED PATHWAY</div>
+        <div class="headline">PROCEED TO TECHNICAL SCREEN</div>
+      </div>
+      <div class="right">
+        <div class="label">RESPONSIBLE USE</div>
+        <p class="sub">This is contextual decision support, not a permanent label or guarantee. Keep human review, consent, and evidence provenance visible.</p>
+      </div>
     </div>
 
-    <div class="closing-cols">
-      <div class="col">
-        <h3>RESPONSIBLE USE</h3>
-        <p>This is contextual decision support, not a permanent label or guarantee. Keep human review, consent, and evidence provenance visible.</p>
-      </div>
+    <div class="decision-grid">
       <div class="col">
         <h3>EVIDENCE PROVENANCE</h3>
-        <p>RESUME · 2026-09-09 · CAND-002</p>
+        <p>Coding performance, project work, interview/panel observations, and reviewer perspectives.</p>
+      </div>
+      <div class="col">
+        <h3>ASSESSMENT</h3>
+        <p>2026-09-09 · RESUME · mock drive 2 + panel round. Re-assessment due Dec 2026.</p>
+      </div>
+      <div class="col">
+        <h3>SOURCE RECORDS</h3>
+        <p>CAND-002 · RR-2026-0418.</p>
       </div>
     </div>
   </section>
