@@ -1,1051 +1,851 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from typing import List, Optional, Dict
-from reportlab.lib import colors
-from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from typing import Any, Dict
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import mm
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.platypus import (
-    SimpleDocTemplate,
     Paragraph,
+    SimpleDocTemplate,
     Spacer,
     Table,
     TableStyle,
     PageBreak,
-    KeepTogether
 )
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.units import inch
 import os
-import uuid
+from pathlib import Path
+import html as html_lib
+import shutil
+import subprocess
 
 
 app = FastAPI(
-    title="Candidate Readiness Report API",
-    version="1.0.0"
+    title="Havet AI Readiness Report",
+    version="1.0"
 )
 
-
-# ============================================================
-# MODELS
-# ============================================================
-
-class CandidateProfile(BaseModel):
-    candidate_id: str
-    name: str
-    email: Optional[str] = ""
-    phone: Optional[str] = ""
-    location: Optional[str] = ""
-    profile_summary: Optional[str] = ""
+templates = Jinja2Templates(directory="templates")
 
 
-class Education(BaseModel):
-    degree: str
-    field_of_study: str
-    institution: str
-    academic_year: Optional[str] = ""
-    graduation_year: Optional[str] = ""
-    score: Optional[str] = ""
-    score_type: Optional[str] = ""
-
-
-class Evidence(BaseModel):
-    source: str
-    section: Optional[str] = ""
-    evidence: str
-    related_skill: Optional[str] = ""
-    related_competency: Optional[str] = ""
-
-
-class Skill(BaseModel):
-    skill_id: str
-    skill_name: str
-    category: str
-    evidence: List[str] = []
-
-
-class Competency(BaseModel):
-    competency_id: str
-    competency_name: str
-    evidence: List[str] = []
-    score: Optional[float] = None
-    level: Optional[str] = ""
-
-
-class ReadinessDimension(BaseModel):
-    score: Optional[float] = None
-    level: Optional[str] = ""
-    evidence: List[str] = []
-
-
-class CommonIntelligence(BaseModel):
-    candidate_profile: CandidateProfile
-    education: List[Education]
-    assessment: Dict
-    evidence: List[Evidence]
-    skills: List[Skill]
-    competencies: List[Competency]
-    scores: Dict
-    readiness_dimensions: Dict[str, ReadinessDimension]
-    overall_readiness: Dict
-
-
-class Strength(BaseModel):
-    area: str
-    evidence: str
-    summary: str
-
-
-class DevelopmentArea(BaseModel):
-    area: str
-    reason: str
-    priority: str
-
-
-class GrowthArea(BaseModel):
-    area: str
-    reason: str
-    current_state: str
-
-
-class LearningRecommendation(BaseModel):
-    recommendation: str
-    reason: str
-    related_area: str
-
-
-class NextBestAction(BaseModel):
-    action: str
-    reason: str
-    expected_outcome: str
-
-
-class CandidateView(BaseModel):
-    strengths: List[Strength]
-    development_areas: List[DevelopmentArea]
-    growth_area: GrowthArea
-    learning_recommendations: List[LearningRecommendation]
-    next_best_action: NextBestAction
-    progress: Dict
-    reassessment: Dict
-
-
-class TPOView(BaseModel):
-    placement_readiness: Dict
-    role_fit: Dict
-    hiring_gaps: List[Dict]
-    placement_risks: List[Dict]
-    success_gate: Dict
-    recommendation: Dict
-
-
-class RecruiterView(BaseModel):
-    role_fit: Dict
-    required_competencies: List[Dict]
-    candidate_gaps: List[Dict]
-    hiring_readiness: Dict
-    success_gate: Dict
-    recommendation: Dict
-
-
-class PersonaSpecificIntelligence(BaseModel):
-    candidate_view: CandidateView
-    tpo_view: TPOView
-    recruiter_employer_view: RecruiterView
-
+# ---------------------------------------------------------
+# Request model
+# ---------------------------------------------------------
 
 class ReadinessPayload(BaseModel):
-    common_intelligence: CommonIntelligence
-    persona_specific_intelligence: PersonaSpecificIntelligence
+    common_intelligence: Dict[str, Any]
+    persona_specific_intelligence: Dict[str, Any]
 
 
-# ============================================================
-# PDF HELPERS
-# ============================================================
+# ---------------------------------------------------------
+# Helper functions
+# ---------------------------------------------------------
 
-PAGE_WIDTH, PAGE_HEIGHT = A4
+def get_level(score):
 
-MARGIN_LEFT = 16 * mm
-MARGIN_RIGHT = 16 * mm
-MARGIN_TOP = 15 * mm
-MARGIN_BOTTOM = 15 * mm
-
-
-def get_styles():
-    styles = getSampleStyleSheet()
-
-    return {
-        "title": ParagraphStyle(
-            "TitleCustom",
-            parent=styles["Title"],
-            fontName="Helvetica-Bold",
-            fontSize=27,
-            leading=30,
-            textColor=colors.HexColor("#063F2E"),
-            spaceAfter=5
-        ),
-
-        "subtitle": ParagraphStyle(
-            "Subtitle",
-            parent=styles["Normal"],
-            fontName="Helvetica",
-            fontSize=10,
-            leading=14,
-            textColor=colors.HexColor("#555555")
-        ),
-
-        "section": ParagraphStyle(
-            "Section",
-            parent=styles["Heading2"],
-            fontName="Helvetica-Bold",
-            fontSize=16,
-            leading=19,
-            textColor=colors.HexColor("#063F2E"),
-            spaceBefore=8,
-            spaceAfter=7
-        ),
-
-        "small": ParagraphStyle(
-            "Small",
-            parent=styles["Normal"],
-            fontSize=8,
-            leading=11,
-            textColor=colors.HexColor("#666666")
-        ),
-
-        "body": ParagraphStyle(
-            "Body",
-            parent=styles["Normal"],
-            fontSize=9,
-            leading=13,
-            textColor=colors.HexColor("#333333")
-        ),
-
-        "body_bold": ParagraphStyle(
-            "BodyBold",
-            parent=styles["Normal"],
-            fontName="Helvetica-Bold",
-            fontSize=9,
-            leading=12,
-            textColor=colors.HexColor("#222222")
-        ),
-
-        "white_title": ParagraphStyle(
-            "WhiteTitle",
-            parent=styles["Normal"],
-            fontName="Helvetica-Bold",
-            fontSize=25,
-            leading=28,
-            textColor=colors.white
-        ),
-
-        "white_body": ParagraphStyle(
-            "WhiteBody",
-            parent=styles["Normal"],
-            fontSize=9,
-            leading=13,
-            textColor=colors.white
-        ),
-
-        "score": ParagraphStyle(
-            "Score",
-            parent=styles["Normal"],
-            fontName="Helvetica-Bold",
-            fontSize=20,
-            leading=22,
-            textColor=colors.HexColor("#00B887"),
-            alignment=TA_CENTER
-        )
-    }
-
-
-def score_level(score):
     if score is None:
         return "NOT ASSESSED"
 
     if score >= 4.5:
         return "ADVANCED"
-    elif score >= 3.5:
+
+    if score >= 3.5:
         return "STRONG"
-    elif score >= 3.0:
+
+    if score >= 3.0:
         return "PROFICIENT"
-    elif score >= 2.0:
+
+    if score >= 2.0:
         return "DEVELOPING"
-    else:
-        return "EMERGING"
+
+    return "EMERGING"
 
 
-def readiness_status(score):
+def get_readiness(score):
+
     if score is None:
         return "NOT ASSESSED"
 
     if score >= 3.5:
         return "READY"
-    elif score >= 3.0:
+
+    if score >= 3.0:
         return "AT BAR"
+
     return "DEVELOPING"
 
 
-def safe(value):
+def fmt_score(value):
     if value is None:
-        return ""
-    return str(value)
+        return "N/A"
+
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+
+    text = f"{number:.2f}".rstrip("0").rstrip(".")
+    return text or "0"
 
 
-# ============================================================
-# PAGE HEADER / FOOTER
-# ============================================================
+def join_nonempty(parts, separator=" · "):
+    cleaned = [str(part).strip() for part in parts if part not in (None, "")]
+    return separator.join(cleaned)
 
-def draw_header_footer(canvas, doc):
-    canvas.saveState()
 
-    # Header
-    canvas.setFillColor(colors.HexColor("#063F2E"))
-    canvas.rect(
-        0,
-        PAGE_HEIGHT - 8 * mm,
-        PAGE_WIDTH,
-        8 * mm,
-        fill=1,
-        stroke=0
+def find_browser_executable():
+    candidates = [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
+        shutil.which("google-chrome"),
+        shutil.which("chromium"),
+        shutil.which("chromium-browser"),
+    ]
+
+    for candidate in candidates:
+        if candidate and os.path.exists(candidate):
+            return candidate
+
+    return None
+
+
+def build_display_context(context):
+    candidate = context["candidate"]
+    education = context["education"]
+    assessment = context["assessment"]
+    competencies = context["competencies"]
+    dimensions = context["dimensions"]
+    overall = context["overall"]
+    candidate_view = context["candidate_view"]
+    tpo_view = context["tpo_view"]
+
+    assessment_date = assessment.get("assessment_date") or "N/A"
+    assessment_source = str(assessment.get("source") or assessment.get("assessment_type") or "assessment")
+    assessment_source_label = assessment_source.replace("_", " ").upper()
+    skills_tag = f"{assessment_source_label} · {len(competencies)} SKILLS · {assessment_date}"
+
+    profile_bits = []
+    if education:
+        edu = education[0]
+        profile_bits.extend(
+            [
+                edu.get("field_of_study"),
+                edu.get("academic_year"),
+                edu.get("institution"),
+                f"Class of {edu.get('graduation_year')}" if edu.get("graduation_year") else None,
+            ]
+        )
+    else:
+        profile_bits.append(candidate.get("profile_summary"))
+
+    profile_line = join_nonempty(profile_bits)
+    if not profile_line:
+        profile_line = "Profile information unavailable"
+
+    overall_level = overall.get("level") or get_level(overall.get("score"))
+    overall_summary = overall.get("summary") or candidate.get("profile_summary") or "Readiness summary unavailable."
+    overall_score_text = fmt_score(overall.get("score"))
+
+    summary_dimension_keys = [
+        ("technical_fundamentals", "Technical fundamentals"),
+        ("project_readiness", "Project readiness"),
+        ("learning_agility", "Learning agility"),
+        ("role_fit", "Role fit"),
+    ]
+    summary_dimensions = []
+    for key, label in summary_dimension_keys:
+        dimension = dimensions.get(key, {})
+        summary_dimensions.append(
+            {
+                "label": label,
+                "score_text": fmt_score(dimension.get("score")),
+                "level": dimension.get("level") or get_level(dimension.get("score")),
+            }
+        )
+
+    pattern_dimension_keys = [
+        ("technical_fundamentals", "Technical fundamentals"),
+        ("project_readiness", "Project readiness"),
+        ("learning_agility", "Learning agility"),
+        ("communication", "Communication"),
+        ("role_fit", "Role fit"),
+    ]
+    pattern_dimensions = []
+    for key, label in pattern_dimension_keys:
+        dimension = dimensions.get(key, {})
+        pattern_dimensions.append(
+            {
+                "label": label,
+                "score_text": fmt_score(dimension.get("score")),
+                "level": dimension.get("level") or get_level(dimension.get("score")),
+            }
+        )
+
+    recruiter_view = context.get("recruiter_view", {})
+    candidate_gap_map = {
+        item.get("competency"): item
+        for item in recruiter_view.get("candidate_gaps", [])
+        if item.get("competency")
+    }
+
+    skills = []
+    evidence_rows = []
+    for item in competencies:
+        competency_name = item.get("competency_name", "")
+        score_text = fmt_score(item.get("score"))
+        level_text = item.get("level") or get_level(item.get("score"))
+        readiness_text = get_readiness(item.get("score"))
+        evidence_text = join_nonempty(item.get("evidence", []), "; ") or "No evidence listed."
+        gap = candidate_gap_map.get(competency_name, {})
+        implication_text = gap.get("impact") or gap.get("gap") or "Supporting signal for the report."
+
+        skills.append(
+            {
+                "name": competency_name,
+                "score_text": score_text,
+                "level": level_text,
+            }
+        )
+        evidence_rows.append(
+            {
+                "name": competency_name,
+                "score_text": score_text,
+                "readiness_text": readiness_text,
+                "readiness_class": "at-bar" if readiness_text == "AT BAR" else "",
+                "evidence_text": evidence_text,
+                "implication_text": implication_text,
+            }
+        )
+
+    growth_area = candidate_view.get("growth_area", {})
+    next_best_action = candidate_view.get("next_best_action", {})
+    reassessment = candidate_view.get("reassessment", {})
+    recommendation = tpo_view.get("recommendation", {})
+    success_gate = tpo_view.get("success_gate", {})
+
+    threshold_score = success_gate.get("minimum_score")
+    if threshold_score is None:
+        threshold_score = 3.0
+
+    threshold_pass_count = 0
+    for item in competencies:
+        score = item.get("score")
+        if isinstance(score, (int, float)) and score >= threshold_score:
+            threshold_pass_count += 1
+
+    gate_required = bool(success_gate.get("required"))
+    gate_competency = success_gate.get("competency") or "SUCCESS GATE"
+    if not gate_required:
+        gate_title = "NOT REQUIRED"
+        gate_threshold = "Not applicable"
+    else:
+        gate_title = gate_competency
+        gate_threshold = f"≥ {fmt_score(threshold_score)} / 5.0"
+
+    action_cards = [
+        {
+            "kind": "action",
+            "tag": "NOW",
+            "title": next_best_action.get("action") or growth_area.get("area") or "Immediate action",
+            "body": next_best_action.get("reason") or growth_area.get("reason") or "Focus on the highest-leverage improvement first.",
+        },
+        {
+            "kind": "action",
+            "tag": "WHY",
+            "title": growth_area.get("area") or "Current growth area",
+            "body": growth_area.get("current_state") or growth_area.get("reason") or "Current evidence is limited in this area.",
+        },
+        {
+            "kind": "action",
+            "tag": "EXPECTED OUTCOME",
+            "title": next_best_action.get("expected_outcome") or "Expected outcome",
+            "body": recommendation.get("reason") or "A stronger, more defensible readiness signal.",
+        },
+        {
+            "kind": "gate",
+            "tag": "SUCCESS GATE",
+            "title": gate_title,
+            "threshold": gate_threshold,
+        },
+    ]
+
+    decision_headline = recommendation.get("decision") or tpo_view.get("hiring_readiness", {}).get("level") or "Decision unavailable"
+    decision_subtitle = recommendation.get("reason") or overall_summary
+
+    evidence_provenance = join_nonempty(
+        [
+            assessment_source_label,
+            assessment_date,
+            candidate.get("candidate_id"),
+        ]
+    )
+    if not evidence_provenance:
+        evidence_provenance = "Assessment provenance unavailable"
+
+    reassessment_due = (
+        reassessment.get("due_date")
+        or assessment.get("reassessment_due")
+        or "TBD"
     )
 
-    canvas.setFillColor(colors.HexColor("#666666"))
-    canvas.setFont("Helvetica", 7)
+    return {
+        "display_name": candidate.get("name", "Candidate"),
+        "candidate_id": candidate.get("candidate_id", ""),
+        "profile_line": profile_line,
+        "overall_score_text": overall_score_text,
+        "scale_max_text": f"{float(overall.get('scale_max') or 5.0):.1f}",
+        "overall_level": overall_level,
+        "overall_summary": overall_summary,
+        "skills_tag": skills_tag,
+        "skills": skills,
+        "summary_dimensions": summary_dimensions,
+        "pattern_dimensions": pattern_dimensions,
+        "growth_title": join_nonempty([growth_area.get("area"), f"{fmt_score(growth_area.get('score'))} / 5" if growth_area.get("score") is not None else "N/A / 5"]),
+        "growth_body": ". ".join(
+            part.rstrip(".")
+            for part in [
+                growth_area.get("current_state"),
+                growth_area.get("reason"),
+            ]
+            if part
+        ),
+        "reassessment_due": reassessment_due,
+        "decision_intro": "Supporting detail for the recommendation on page 1: what was observed, what it means, and what should happen next.",
+        "threshold_score_text": f"{float(threshold_score):.1f} / 5.0",
+        "threshold_summary_text": f"{threshold_pass_count} of {len(competencies)} at or above threshold",
+        "evidence_rows": evidence_rows,
+        "action_cards": action_cards,
+        "decision_headline": decision_headline,
+        "decision_subtitle": decision_subtitle,
+        "evidence_provenance": evidence_provenance,
+        "footer_assessed": join_nonempty([assessment_date, assessment_source_label]),
+        "source_record": candidate.get("candidate_id", ""),
+    }
 
-    canvas.drawString(
-        MARGIN_LEFT,
-        7 * mm,
-        "HAVET AI · READINESS INTELLIGENCE"
+
+def build_browser_pdf(html_path: str, output_path: str) -> None:
+    browser = find_browser_executable()
+    if not browser:
+        raise FileNotFoundError("Google Chrome or Chromium was not found")
+
+    html_url = Path(html_path).resolve().as_uri()
+    command = [
+        browser,
+        "--headless",
+        "--disable-gpu",
+        "--allow-file-access-from-files",
+        "--run-all-compositor-stages-before-draw",
+        "--print-to-pdf-no-header",
+        "--no-pdf-header-footer",
+        f"--print-to-pdf={output_path}",
+        html_url,
+    ]
+
+    subprocess.run(
+        command,
+        check=True,
+        capture_output=True,
+        text=True,
+        timeout=120,
     )
 
-    canvas.drawRightString(
-        PAGE_WIDTH - MARGIN_RIGHT,
-        7 * mm,
-        f"{doc.page:02d} / 02"
-    )
 
-    canvas.restoreState()
+def build_fallback_pdf(output_path: str, context: dict) -> None:
+    """
+    Generate a basic PDF report when WeasyPrint is unavailable.
 
-
-# ============================================================
-# PDF GENERATION
-# ============================================================
-
-def generate_pdf(payload: ReadinessPayload):
-
-    os.makedirs("output", exist_ok=True)
-
-    filename = f"readiness_report_{uuid.uuid4().hex[:8]}.pdf"
-    filepath = os.path.join("output", filename)
-
-    styles = get_styles()
-
+    This keeps the endpoint functional on machines that do not have the
+    native GTK/Pango libraries required by WeasyPrint.
+    """
+    styles = getSampleStyleSheet()
     doc = SimpleDocTemplate(
-        filepath,
+        output_path,
         pagesize=A4,
-        rightMargin=MARGIN_RIGHT,
-        leftMargin=MARGIN_LEFT,
-        topMargin=20 * mm,
-        bottomMargin=15 * mm
+        rightMargin=0.5 * inch,
+        leftMargin=0.5 * inch,
+        topMargin=3.85 * inch,
+        bottomMargin=0.5 * inch,
     )
 
     story = []
+    title_style = styles["Title"]
+    body_style = styles["BodyText"]
+    heading_style = styles["Heading2"]
+    small_style = styles["BodyText"]
+    small_style.fontSize = 8
+    small_style.leading = 10
 
+    dark = colors.HexColor("#0b4a37")
+    mint = colors.HexColor("#39d49a")
+    text_dark = colors.HexColor("#15352d")
+    muted = colors.HexColor("#60736c")
+    line = colors.HexColor("#dbe5e0")
+
+    candidate = context["candidate"]
+    overall = context["overall"]
+    competencies = context["competencies"]
+    dimensions = context["dimensions"]
+    candidate_view = context["candidate_view"]
+    tpo_view = context["tpo_view"]
+    assessment = context["assessment"]
+    education = context["education"]
+    growth = candidate_view.get("growth_area", {})
+    recommendation = tpo_view.get("recommendation", {})
+    gate = tpo_view.get("success_gate", {})
+
+    def fmt_score(value):
+        return "N/A" if value is None else f"{value:.1f}" if isinstance(value, (int, float)) else str(value)
+
+    def safe_text(value, default=""):
+        return default if value is None else str(value)
+
+    def wrap_text(text, width, font="Helvetica", size=8):
+        words = str(text).split()
+        lines = []
+        current = ""
+        for word in words:
+            test = f"{current} {word}".strip()
+            if stringWidth(test, font, size) <= width or not current:
+                current = test
+            else:
+                lines.append(current)
+                current = word
+        if current:
+            lines.append(current)
+        return lines
+
+    def draw_header(canvas, page_num, total_pages, title, subtitle=""):
+        canvas.saveState()
+        canvas.setFillColor(dark)
+        canvas.rect(0, 592, 595, 248, stroke=0, fill=1)
+        canvas.setFillColor(mint)
+        canvas.roundRect(44, 778, 18, 18, 4, stroke=0, fill=1)
+        canvas.setFillColor(colors.white)
+        canvas.setFont("Helvetica-Bold", 14)
+        canvas.drawString(70, 784, "havet AI")
+        canvas.setFillColor(colors.HexColor("#a7c2bb"))
+        canvas.setFont("Helvetica", 8)
+        canvas.drawRightString(551, 784, f"{title} · {page_num:02d} / {total_pages:02d}")
+        canvas.setFillColor(colors.HexColor("#76cdb0"))
+        canvas.setFont("Helvetica", 8)
+        canvas.drawString(44, 742, subtitle)
+        canvas.restoreState()
+
+    def draw_footer(canvas, left_text, right_text):
+        canvas.saveState()
+        canvas.setStrokeColor(line)
+        canvas.line(44, 48, 551, 48)
+        canvas.setFillColor(colors.HexColor("#7b8e87"))
+        canvas.setFont("Helvetica", 6.5)
+        canvas.drawString(44, 34, left_text)
+        canvas.drawRightString(551, 34, right_text)
+        canvas.restoreState()
+
+    def page_one(canvas, doc):
+        draw_header(
+            canvas,
+            1,
+            2,
+            "CANDIDATE READINESS REPORT",
+            "READINESS PROFILE",
+        )
+        draw_footer(
+            canvas,
+            "HAVET AI  •  READINESS INTELLIGENCE",
+            f"ASSESSED {assessment.get('assessment_date', '')}  •  PROFILE {candidate.get('candidate_id', '')}",
+        )
+
+    def page_two(canvas, doc):
+        draw_header(
+            canvas,
+            2,
+            2,
+            candidate.get("name", ""),
+            "DECISION DETAIL",
+        )
+        draw_footer(
+            canvas,
+            "EVIDENCE PROVENANCE",
+            f"SOURCE RECORDS  •  {candidate.get('candidate_id', '')}",
+        )
+
+    story.append(Paragraph("READINESS PROFILE", small_style))
+    story.append(Paragraph(f"<font size=28><b>{html_lib.escape(candidate.get('name', 'Candidate'))}</b></font>", title_style))
+
+    if education:
+        edu = education[0]
+        meta = " · ".join(filter(None, [
+            safe_text(edu.get("field_of_study")),
+            safe_text(edu.get("academic_year")),
+            safe_text(edu.get("institution")),
+            f"Class of {edu.get('graduation_year')}" if edu.get("graduation_year") else None,
+        ]))
+        story.append(Paragraph(html_lib.escape(meta), body_style))
+    story.append(Spacer(1, 0.14 * inch))
+    story.append(Paragraph(html_lib.escape(safe_text(overall.get("summary", ""))), body_style))
+
+    # Overall readiness box
+    score_data = [
+        [
+            Paragraph("<font color='#6a8078' size=7>OVERALL READINESS</font>", body_style),
+            Paragraph(f"<font color='#15b07d' size=26><b>{fmt_score(overall.get('score'))}</b></font> <font color='#657b73' size=12>/ 5.0</font>", body_style),
+            Paragraph(f"<font color='#15352d' size=12><b>{html_lib.escape(overall.get('level', ''))}</b></font>", body_style),
+        ]
+    ]
+    score_table = Table(score_data, colWidths=[180, 120, 120], rowHeights=[60])
+    score_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), dark),
+        ("BOX", (0, 0), (-1, -1), 0, dark),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 14),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 14),
+    ]))
+    story.append(Spacer(1, 0.15 * inch))
+    story.append(score_table)
+
+    dim_cells = []
+    for key, dimension in list(dimensions.items())[:4]:
+        dim_cells.append(Paragraph(
+            f"<font size=18 color='#15b07d'><b>{fmt_score(dimension.get('score'))}</b></font><br/>"
+            f"<font size=8 color='#15352d'><b>{html_lib.escape(key.replace('_', ' ').title())}</b></font>",
+            body_style,
+        ))
+    while len(dim_cells) < 4:
+        dim_cells.append("")
+    dim_table = Table([dim_cells], colWidths=[130, 130, 130, 130])
+    dim_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.white),
+        ("LINEABOVE", (0, 0), (-1, -1), 1, line),
+        ("LINEBELOW", (0, 0), (-1, -1), 1, line),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+    ]))
+    story.append(Spacer(1, 0.15 * inch))
+    story.append(dim_table)
+    story.append(Spacer(1, 0.2 * inch))
+
+    story.append(Paragraph("01  Skills, scored on evidence", heading_style))
+    story.append(Spacer(1, 0.07 * inch))
+    skill_rows = [[
+        Paragraph("<font size=7 color='#6a7f78'>SKILL</font>", body_style),
+        Paragraph("<font size=7 color='#6a7f78'>SCORE</font>", body_style),
+        Paragraph("<font size=7 color='#6a7f78'>LEVEL</font>", body_style),
+    ]]
+    for item in competencies:
+        skill_rows.append([
+            Paragraph(f"<b>{html_lib.escape(safe_text(item.get('competency_name', '')))}</b>", body_style),
+            Paragraph(f"<font color='#15b07d'><b>{fmt_score(item.get('score'))}</b></font>", body_style),
+            Paragraph(html_lib.escape(safe_text(item.get("level", ""))), body_style),
+        ])
+    skill_table = Table(skill_rows, colWidths=[290, 90, 130], repeatRows=1)
+    skill_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f4f7f6")),
+        ("BOX", (0, 0), (-1, -1), 1, line),
+        ("INNERGRID", (0, 0), (-1, -1), 1, line),
+        ("LEFTPADDING", (0, 0), (-1, -1), 12),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+    story.append(skill_table)
+
+    story.append(PageBreak())
+    story.append(Paragraph("DECISION DETAIL", small_style))
+    story.append(Paragraph("<font size=24><b>Evidence, action, and gates.</b></font>", title_style))
+    story.append(Spacer(1, 0.08 * inch))
+    story.append(Paragraph("Supporting detail for the recommendation on page 1: what was observed, what it means, and what should happen next.", body_style))
+    story.append(Spacer(1, 0.06 * inch))
+
+    growth_lines = wrap_text(growth.get("current_state", "") or growth.get("reason", ""), 260, size=7)
+    growth_table = Table([[
+        Paragraph(
+            f"<font size=6.5 color='#4d8975'><b>02  WHAT SHE IS BUILDING NEXT</b></font><br/>"
+            f"<font size=12 color='#15352d'><b>{html_lib.escape(safe_text(growth.get('area', 'Not identified')))}</b></font><br/>"
+            f"<font size=7 color='#4e6059'>{html_lib.escape(' '.join(growth_lines))}</font>",
+            body_style,
+        ),
+        Paragraph(
+            f"<font size=6.5 color='#4d8975'><b>RE-ASSESSMENT DUE</b></font><br/>"
+            f"<font size=11 color='#15352d'><b>{html_lib.escape(safe_text(candidate_view.get('reassessment', {}).get('due_date'), 'Dec 2026'))}</b></font><br/>"
+            f"<font size=7 color='#4e6059'>Scores are a point in time, not a fixed label.</font>",
+            body_style,
+        )
+    ]], colWidths=[355, 185])
+    growth_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f7f9f8")),
+        ("BOX", (0, 0), (-1, -1), 1, line),
+        ("LEFTPADDING", (0, 0), (-1, -1), 12),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    story.append(growth_table)
+    story.append(Spacer(1, 0.05 * inch))
+
+    story.append(Paragraph("<font size=13><b>03  Role-specific evidence</b></font>", body_style))
+    evidence_rows = [[
+        Paragraph("<font size=5.5 color='#6a7f78'>COMPETENCY</font>", body_style),
+        Paragraph("<font size=5.5 color='#6a7f78'>SCORE</font>", body_style),
+        Paragraph("<font size=5.5 color='#6a7f78'>READINESS</font>", body_style),
+        Paragraph("<font size=5.5 color='#6a7f78'>EVIDENCE</font>", body_style),
+        Paragraph("<font size=5.5 color='#6a7f78'>IMPLICATION</font>", body_style),
+    ]]
+    for item in competencies:
+        evidence_rows.append([
+            Paragraph(f"<b>{html_lib.escape(safe_text(item.get('competency_name', '')))}</b>", body_style),
+            Paragraph(f"<font color='#15b07d'><b>{fmt_score(item.get('score'))}</b></font>", body_style),
+            Paragraph(html_lib.escape(safe_text(item.get("readiness", ""))), body_style),
+            Paragraph(html_lib.escape("; ".join(item.get("evidence", []))), body_style),
+            Paragraph(html_lib.escape(safe_text(item.get("implication", "Supporting signal for the report."))), body_style),
+        ])
+    evidence_table = Table(evidence_rows, colWidths=[120, 42, 58, 165, 117], repeatRows=1)
+    evidence_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f4f7f6")),
+        ("BOX", (0, 0), (-1, -1), 1, line),
+        ("INNERGRID", (0, 0), (-1, -1), 1, line),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    story.append(evidence_table)
+    story.append(Spacer(1, 0.08 * inch))
+
+    story.append(Paragraph("<font size=13><b>04  Readiness pattern</b></font>", body_style))
+    pattern_cells = []
+    for key, dimension in dimensions.items():
+        pattern_cells.append(Paragraph(
+            f"<font size=15 color='#15b07d'><b>{fmt_score(dimension.get('score'))}</b></font><br/>"
+            f"<font size=6.5><b>{html_lib.escape(key.replace('_', ' ').title())}</b></font><br/>"
+            f"<font size=5.5 color='#6a7f78'>{html_lib.escape(dimension.get('level', ''))}</font>",
+            body_style,
+        ))
+    if pattern_cells:
+        pattern_table = Table([pattern_cells], colWidths=[112] * len(pattern_cells))
+        pattern_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#f7f9f8")),
+            ("BOX", (0, 0), (-1, -1), 1, line),
+            ("INNERGRID", (0, 0), (-1, -1), 1, line),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ]))
+        story.append(pattern_table)
+    story.append(Spacer(1, 0.14 * inch))
+
+    story.append(Spacer(1, 0.04 * inch))
+    story.append(Paragraph("<font size=13><b>05  Next best action</b></font>", body_style))
+    action = candidate_view.get("next_best_action", {})
+    action_table = Table([[
+        Paragraph(
+            f"<font size=6 color='#4d8975'><b>NOW</b></font><br/>"
+            f"<font size=8.5 color='#15352d'><b>{html_lib.escape(safe_text(action.get('action', growth.get('area', 'Close the design gap'))))}</b></font>",
+            body_style,
+        ),
+        Paragraph(
+            f"<font size=6 color='#4d8975'><b>WHY</b></font><br/>"
+            f"<font size=6.5 color='#4e6059'>{html_lib.escape(safe_text(action.get('reason', growth.get('reason', 'Focus on the highest leverage improvement first.'))))}</font>",
+            body_style,
+        ),
+        Paragraph(
+            f"<font size=6 color='#4d8975'><b>EXPECTED OUTCOME</b></font><br/>"
+            f"<font size=6.5 color='#4e6059'>{html_lib.escape(safe_text(action.get('expected_outcome', 'A stronger, more defensible readiness signal.')))}</font>",
+            body_style,
+        ),
+        Paragraph(
+            f"<font size=6 color='#76cdb0'><b>SUCCESS GATE</b></font><br/>"
+            f"<font size=8.5 color='#ffffff'><b>{html_lib.escape(safe_text(gate.get('competency', growth.get('area', 'OOP & Design'))))} >= {fmt_score(gate.get('minimum_score', 3.0))} / 5.0</b></font>",
+            body_style,
+        ),
+    ]], colWidths=[132, 132, 132, 126])
+    action_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (2, 0), colors.HexColor("#f7f9f8")),
+        ("BACKGROUND", (3, 0), (3, 0), dark),
+        ("BOX", (0, 0), (-1, -1), 1, line),
+        ("INNERGRID", (0, 0), (-1, -1), 1, line),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    story.append(action_table)
+    story.append(Spacer(1, 0.01 * inch))
+    story.append(Paragraph("<font size=13><b>06  Final decision</b></font>", body_style))
+    story.append(Paragraph(
+        f"<font size=8.5 color='#15352d'><b>{html_lib.escape(safe_text(recommendation.get('decision', 'Shortlist now; unlock higher-bar opportunities after the design gate.')))}</b></font><br/>"
+        f"<font size=6.5 color='#4e6059'>{html_lib.escape(safe_text(recommendation.get('reason', 'This is contextual decision support, not a permanent label or guarantee.')))}</font>",
+        body_style,
+    ))
+    story.append(Spacer(1, 0.03 * inch))
+
+    doc.build(story, onFirstPage=page_one, onLaterPages=page_two)
+
+
+# ---------------------------------------------------------
+# Generate PDF
+# ---------------------------------------------------------
+
+@app.post("/generate-readiness-report")
+async def generate_readiness_report(
+    payload: ReadinessPayload
+):
     common = payload.common_intelligence
     persona = payload.persona_specific_intelligence
 
-    candidate = common.candidate_profile
+    candidate = common.get(
+        "candidate_profile",
+        {}
+    )
 
-    overall = common.overall_readiness
+    education = common.get(
+        "education",
+        []
+    )
+
+    assessment = common.get(
+        "assessment",
+        {}
+    )
+
+    competencies = common.get(
+        "competencies",
+        []
+    )
+
+    dimensions = common.get(
+        "readiness_dimensions",
+        {}
+    )
+
+    overall = common.get(
+        "overall_readiness",
+        {}
+    )
+
+    candidate_view = persona.get(
+        "candidate_view",
+        {}
+    )
+
+    tpo_view = persona.get(
+        "tpo_view",
+        {}
+    )
+
+    # -----------------------------------------------------
+    # Prepare derived display values
+    # -----------------------------------------------------
 
     overall_score = overall.get("score")
-    overall_level = overall.get("level", score_level(overall_score))
-    overall_summary = overall.get("summary", "")
 
-    # ========================================================
-    # PAGE 1
-    # ========================================================
-
-    story.append(
-        Paragraph(
-            "READINESS PROFILE",
-            styles["small"]
-        )
-    )
-
-    story.append(
-        Paragraph(
-            safe(candidate.name),
-            styles["title"]
-        )
-    )
-
-    education_text = ""
-
-    if common.education:
-        edu = common.education[0]
-
-        education_text = (
-            f"{safe(edu.field_of_study)} · "
-            f"{safe(edu.academic_year)} · "
-            f"{safe(edu.institution)} · "
-            f"Class of {safe(edu.graduation_year)}"
+    if not overall.get("level"):
+        overall["level"] = get_level(
+            overall_score
         )
 
-    story.append(
-        Paragraph(
-            education_text,
-            styles["subtitle"]
+    for competency in competencies:
+
+        score = competency.get("score")
+
+        if not competency.get("level"):
+            competency["level"] = get_level(score)
+
+        competency["readiness"] = get_readiness(
+            score
         )
-    )
 
-    story.append(Spacer(1, 8))
+    for key, dimension in dimensions.items():
 
-    # Overall readiness box
-    overall_data = [
-        [
-            Paragraph(
-                "OVERALL READINESS",
-                styles["small"]
-            ),
-            Paragraph(
-                f"<b>{safe(overall_score)}</b> / 5.0",
-                styles["score"]
-            ),
-            Paragraph(
-                safe(overall_level),
-                styles["body_bold"]
+        if not dimension.get("level"):
+
+            dimension["level"] = get_level(
+                dimension.get("score")
             )
-        ]
-    ]
 
-    overall_table = Table(
-        overall_data,
-        colWidths=[55 * mm, 45 * mm, 55 * mm]
+    # -----------------------------------------------------
+    # Template context
+    # -----------------------------------------------------
+
+    context = {
+        "candidate": candidate,
+        "education": education,
+        "assessment": assessment,
+        "competencies": competencies,
+        "dimensions": dimensions,
+        "overall": overall,
+        "candidate_view": candidate_view,
+        "tpo_view": tpo_view,
+        "recruiter_view": persona.get("recruiter_employer_view", {}),
+        "common_threshold": 3.0,
+    }
+
+    display_context = build_display_context(
+        context
     )
 
-    overall_table.setStyle(
-        TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F1F7F4")),
-            ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#DDE9E4")),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("ALIGN", (1, 0), (1, 0), "CENTER"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 10),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-            ("TOPPADDING", (0, 0), (-1, -1), 10),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 10)
-        ])
+    # -----------------------------------------------------
+    # Render HTML
+    # -----------------------------------------------------
+
+    html_content = templates.get_template(
+        "readiness_report.html"
+    ).render(**display_context)
+
+    # -----------------------------------------------------
+    # Create output directory
+    # -----------------------------------------------------
+
+    os.makedirs(
+        "output",
+        exist_ok=True
     )
 
-    story.append(overall_table)
+    html_filename = "readiness_report.html"
+    filename = "readiness_report.pdf"
 
-    story.append(Spacer(1, 8))
+    html_path = os.path.join(
+        "output",
+        html_filename
+    )
 
-    if overall_summary:
-        story.append(
-            Paragraph(
-                safe(overall_summary),
-                styles["body"]
-            )
+    output_path = os.path.join(
+        "output",
+        filename
+    )
+
+    with open(html_path, "w", encoding="utf-8") as html_file:
+        html_file.write(html_content)
+
+    # -----------------------------------------------------
+    # HTML → PDF
+    # -----------------------------------------------------
+
+    try:
+        build_browser_pdf(
+            html_path=html_path,
+            output_path=output_path,
         )
-
-    # ========================================================
-    # READINESS DIMENSIONS
-    # ========================================================
-
-    dimension_rows = []
-
-    for name, dimension in common.readiness_dimensions.items():
-
-        score = dimension.score
-
-        label = name.replace("_", " ").title()
-
-        dimension_rows.append(
-            [
-                Paragraph(
-                    safe(score),
-                    styles["score"]
-                ),
-                Paragraph(
-                    label,
-                    styles["body_bold"]
-                )
-            ]
+    except Exception:
+        build_fallback_pdf(
+            output_path=output_path,
+            context=context
         )
-
-    if dimension_rows:
-
-        dimension_table = Table(
-            [dimension_rows],
-            colWidths=[
-                31 * mm,
-                31 * mm
-            ] * len(dimension_rows)
-        )
-
-        dimension_table.setStyle(
-            TableStyle([
-                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAF9")),
-                ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E9E6")),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("TOPPADDING", (0, 0), (-1, -1), 8),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 8)
-            ])
-        )
-
-        story.append(dimension_table)
-
-    # ========================================================
-    # SKILLS
-    # ========================================================
-
-    story.append(
-        Paragraph(
-            "01 Skills, scored on evidence",
-            styles["section"]
-        )
-    )
-
-    skill_data = [
-        [
-            Paragraph("<b>SKILL</b>", styles["small"]),
-            Paragraph("<b>SCORE</b>", styles["small"]),
-            Paragraph("<b>LEVEL</b>", styles["small"])
-        ]
-    ]
-
-    for skill in common.skills:
-
-        # Match competency score if available
-        score = None
-        level = ""
-
-        for competency in common.competencies:
-            if (
-                competency.competency_id == skill.skill_id
-                or competency.competency_name.lower()
-                == skill.skill_name.lower()
-            ):
-                score = competency.score
-                level = competency.level or score_level(score)
-                break
-
-        skill_data.append(
-            [
-                Paragraph(
-                    safe(skill.skill_name),
-                    styles["body_bold"]
-                ),
-                Paragraph(
-                    safe(score),
-                    styles["body"]
-                ),
-                Paragraph(
-                    safe(level),
-                    styles["small"]
-                )
-            ]
-        )
-
-    skill_table = Table(
-        skill_data,
-        colWidths=[
-            90 * mm,
-            25 * mm,
-            35 * mm
-        ],
-        repeatRows=1
-    )
-
-    skill_table.setStyle(
-        TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F1F5F3")),
-            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#E0E6E3")),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 7),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 7),
-            ("TOPPADDING", (0, 0), (-1, -1), 6),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 6)
-        ])
-    )
-
-    story.append(skill_table)
-
-    # ========================================================
-    # GROWTH AREA
-    # ========================================================
-
-    growth = persona.candidate_view.growth_area
-
-    story.append(
-        Paragraph(
-            "02 What the candidate is building next",
-            styles["section"]
-        )
-    )
-
-    growth_data = [
-        [
-            Paragraph(
-                "<b>ACTIVE GROWTH AREA</b>",
-                styles["small"]
-            ),
-            Paragraph(
-                "<b>REASON</b>",
-                styles["small"]
-            )
-        ],
-        [
-            Paragraph(
-                safe(growth.area),
-                styles["body_bold"]
-            ),
-            Paragraph(
-                safe(growth.reason),
-                styles["body"]
-            )
-        ],
-        [
-            Paragraph(
-                "<b>CURRENT STATE</b>",
-                styles["small"]
-            ),
-            Paragraph(
-                safe(growth.current_state),
-                styles["body"]
-            )
-        ]
-    ]
-
-    growth_table = Table(
-        growth_data,
-        colWidths=[55 * mm, 95 * mm]
-    )
-
-    growth_table.setStyle(
-        TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAF9")),
-            ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#DDE7E2")),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 8),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-            ("TOPPADDING", (0, 0), (-1, -1), 7),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 7)
-        ])
-    )
-
-    story.append(growth_table)
-
-    # ========================================================
-    # PAGE 2
-    # ========================================================
-
-    story.append(PageBreak())
-
-    story.append(
-        Paragraph(
-            "DECISION DETAIL",
-            styles["small"]
-        )
-    )
-
-    story.append(
-        Paragraph(
-            "Evidence, action,<br/>and gates.",
-            styles["white_title"]
-        )
-    )
-
-    story.append(Spacer(1, 10))
-
-    # ========================================================
-    # ROLE-SPECIFIC EVIDENCE
-    # ========================================================
-
-    story.append(
-        Paragraph(
-            "03 Role-specific evidence",
-            styles["section"]
-        )
-    )
-
-    evidence_data = [
-        [
-            Paragraph("<b>COMPETENCY</b>", styles["small"]),
-            Paragraph("<b>SCORE</b>", styles["small"]),
-            Paragraph("<b>READINESS</b>", styles["small"]),
-            Paragraph("<b>EVIDENCE</b>", styles["small"]),
-            Paragraph("<b>IMPLICATION</b>", styles["small"])
-        ]
-    ]
-
-    for competency in common.competencies:
-
-        evidence_text = "<br/>".join(
-            [safe(x) for x in competency.evidence]
-        )
-
-        status = readiness_status(competency.score)
-
-        evidence_data.append(
-            [
-                Paragraph(
-                    safe(competency.competency_name),
-                    styles["body_bold"]
-                ),
-                Paragraph(
-                    safe(competency.score),
-                    styles["body"]
-                ),
-                Paragraph(
-                    status,
-                    styles["small"]
-                ),
-                Paragraph(
-                    evidence_text,
-                    styles["small"]
-                ),
-                Paragraph(
-                    "",
-                    styles["small"]
-                )
-            ]
-        )
-
-    evidence_table = Table(
-        evidence_data,
-        colWidths=[
-            38 * mm,
-            16 * mm,
-            23 * mm,
-            48 * mm,
-            30 * mm
-        ],
-        repeatRows=1
-    )
-
-    evidence_table.setStyle(
-        TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F1F5F3")),
-            ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#DDE4E1")),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 5),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-            ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5)
-        ])
-    )
-
-    story.append(evidence_table)
-
-    # ========================================================
-    # READINESS PATTERN
-    # ========================================================
-
-    story.append(
-        Paragraph(
-            "04 Readiness pattern",
-            styles["section"]
-        )
-    )
-
-    readiness_cards = []
-
-    for name, dimension in common.readiness_dimensions.items():
-
-        label = name.replace("_", " ").title()
-
-        readiness_cards.append(
-            [
-                Paragraph(
-                    safe(dimension.score),
-                    styles["score"]
-                ),
-                Paragraph(
-                    label,
-                    styles["body_bold"]
-                ),
-                Paragraph(
-                    safe(
-                        dimension.level
-                        or score_level(dimension.score)
-                    ),
-                    styles["small"]
-                )
-            ]
-        )
-
-    pattern_table = Table(
-        [readiness_cards],
-        colWidths=[32 * mm] * len(readiness_cards)
-    )
-
-    pattern_table.setStyle(
-        TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAF9")),
-            ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#E1E8E4")),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("TOPPADDING", (0, 0), (-1, -1), 7),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 7)
-        ])
-    )
-
-    story.append(pattern_table)
-
-    # ========================================================
-    # NEXT BEST ACTION
-    # ========================================================
-
-    story.append(
-        Paragraph(
-            "05 Next best action",
-            styles["section"]
-        )
-    )
-
-    action = persona.candidate_view.next_best_action
-
-    action_data = [
-        [
-            Paragraph("<b>ACTION</b>", styles["small"]),
-            Paragraph("<b>WHY</b>", styles["small"]),
-            Paragraph("<b>EXPECTED OUTCOME</b>", styles["small"])
-        ],
-        [
-            Paragraph(
-                safe(action.action),
-                styles["body_bold"]
-            ),
-            Paragraph(
-                safe(action.reason),
-                styles["body"]
-            ),
-            Paragraph(
-                safe(action.expected_outcome),
-                styles["body"]
-            )
-        ]
-    ]
-
-    action_table = Table(
-        action_data,
-        colWidths=[
-            50 * mm,
-            50 * mm,
-            50 * mm
-        ]
-    )
-
-    action_table.setStyle(
-        TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F1F5F3")),
-            ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#DDE5E1")),
-            ("GRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#E1E7E4")),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 7),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 7),
-            ("TOPPADDING", (0, 0), (-1, -1), 7),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 7)
-        ])
-    )
-
-    story.append(action_table)
-
-    # ========================================================
-    # SUCCESS GATE
-    # ========================================================
-
-    tpo_gate = persona.tpo_view.success_gate
-
-    story.append(
-        Spacer(1, 8)
-    )
-
-    story.append(
-        Paragraph(
-            "SUCCESS GATE",
-            styles["small"]
-        )
-    )
-
-    gate_text = (
-        f"{safe(tpo_gate.get('competency'))} "
-        f"≥ {safe(tpo_gate.get('minimum_score'))} / 5.0"
-    )
-
-    gate_table = Table(
-        [
-            [
-                Paragraph(
-                    gate_text,
-                    styles["body_bold"]
-                )
-            ]
-        ],
-        colWidths=[150 * mm]
-    )
-
-    gate_table.setStyle(
-        TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#063F2E")),
-            ("TEXTCOLOR", (0, 0), (-1, -1), colors.white),
-            ("BOX", (0, 0), (-1, -1), 0, colors.white),
-            ("LEFTPADDING", (0, 0), (-1, -1), 10),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-            ("TOPPADDING", (0, 0), (-1, -1), 10),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 10)
-        ])
-    )
-
-    story.append(gate_table)
-
-    # ========================================================
-    # FINAL DECISION
-    # ========================================================
-
-    story.append(
-        Paragraph(
-            "06 Final decision",
-            styles["section"]
-        )
-    )
-
-    recommendation = persona.tpo_view.recommendation
-
-    decision = recommendation.get(
-        "decision",
-        ""
-    )
-
-    reason = recommendation.get(
-        "reason",
-        ""
-    )
-
-    decision_table = Table(
-        [
-            [
-                Paragraph(
-                    safe(decision),
-                    styles["body_bold"]
-                ),
-                Paragraph(
-                    safe(reason),
-                    styles["body"]
-                )
-            ]
-        ],
-        colWidths=[65 * mm, 85 * mm]
-    )
-
-    decision_table.setStyle(
-        TableStyle([
-            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#063F2E")),
-            ("TEXTCOLOR", (0, 0), (-1, -1), colors.white),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 10),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 10),
-            ("TOPPADDING", (0, 0), (-1, -1), 10),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 10)
-        ])
-    )
-
-    story.append(decision_table)
-
-    # ========================================================
-    # FOOTER INFORMATION
-    # ========================================================
-
-    story.append(Spacer(1, 10))
-
-    assessment = common.assessment
-
-    footer_data = [
-        [
-            Paragraph(
-                "<b>EVIDENCE PROVENANCE</b><br/>"
-                + ", ".join(
-                    [
-                        safe(x.source)
-                        for x in common.evidence
-                    ]
-                ),
-                styles["small"]
-            ),
-            Paragraph(
-                "<b>ASSESSMENT</b><br/>"
-                + safe(
-                    assessment.get(
-                        "assessment_date",
-                        ""
-                    )
-                ),
-                styles["small"]
-            ),
-            Paragraph(
-                "<b>SOURCE</b><br/>"
-                + safe(
-                    assessment.get(
-                        "source",
-                        "resume"
-                    )
-                ),
-                styles["small"]
-            )
-        ]
-    ]
-
-    footer_table = Table(
-        footer_data,
-        colWidths=[
-            60 * mm,
-            45 * mm,
-            45 * mm
-        ]
-    )
-
-    footer_table.setStyle(
-        TableStyle([
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 5),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 5)
-        ])
-    )
-
-    story.append(footer_table)
-
-    # ========================================================
-    # BUILD
-    # ========================================================
-
-    doc.build(
-        story,
-        onFirstPage=draw_header_footer,
-        onLaterPages=draw_header_footer
-    )
-
-    return filepath
-
-
-# ============================================================
-# API ENDPOINT
-# ============================================================
-
-@app.post("/generate-readiness-report")
-def generate_readiness_report(payload: ReadinessPayload):
-
-    pdf_path = generate_pdf(payload)
 
     return FileResponse(
-        pdf_path,
+        output_path,
         media_type="application/pdf",
-        filename=os.path.basename(pdf_path)
+        filename=filename
     )
 
 
@@ -1053,6 +853,6 @@ def generate_readiness_report(payload: ReadinessPayload):
 def root():
 
     return {
-        "message": "Candidate Readiness Report API",
+        "message": "Havet AI Readiness Report API",
         "endpoint": "POST /generate-readiness-report"
     }

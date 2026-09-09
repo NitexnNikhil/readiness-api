@@ -1,4 +1,5 @@
 fastapi
 uvicorn
-reportlab
+jinja2
+weasyprint
 pydantic

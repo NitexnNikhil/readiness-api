@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Candidate Readiness Report - Template</title>
+<style>
+  :root{
+    --ink:#0B1220;
+    --ink-soft:#1F2937;
+    --text:#111827;
+    --subtext:#4B5563;
+    --muted:#9CA3AF;
+    --line:#E5E7EB;
+    --panel:#F4F5F7;
+    --panel-2:#EFF1F4;
+    --accent:#146C5B;
+    --accent-bg:#E7F2EF;
+    --amber:#B45309;
+    --amber-bg:#FDF0DF;
+    --white:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:#e9eaee;
+    font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color:var(--text);
+  }
+  .page{
+    width:816px;
+    min-height:1056px;
+    margin:24px auto;
+    background:#fff;
+    padding:40px;
+    position:relative;
+    box-shadow:0 0 0 1px var(--line);
+  }
+  .page + .page{ page-break-before: always; }
+
+  .report-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    border-bottom:1px solid var(--line);
+    padding-bottom:10px;
+    margin-bottom:26px;
+  }
+  .report-header .brand{ font-weight:700; font-size:14px; color:var(--ink); }
+  .report-header .page-label{ font-size:10px; color:var(--subtext); letter-spacing:.02em; }
+
+  .report-footer{
+    position:absolute;
+    left:40px; right:40px; bottom:28px;
+    border-top:1px solid var(--line);
+    padding-top:10px;
+    display:flex;
+    justify-content:space-between;
+    font-size:8.5px;
+    color:var(--muted);
+    letter-spacing:.02em;
+  }
+
+  .eyebrow{
+    font-size:10px;
+    letter-spacing:.18em;
+    color:var(--subtext);
+    margin:0 0 6px;
+  }
+  h1.name{
+    font-size:26px;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  .subline{
+    font-size:11px;
+    color:var(--subtext);
+    margin:0 0 26px;
+  }
+
+  .overall-label{
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:.04em;
+    color:var(--ink);
+    margin-bottom:14px;
+  }
+  .overall-row{
+    display:flex;
+    align-items:flex-start;
+    gap:16px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .score-block{ min-width:150px; }
+  .score-number{
+    font-size:44px;
+    font-weight:700;
+    color:var(--ink);
+    line-height:1;
+  }
+  .score-number .max{
+    font-size:18px;
+    font-weight:400;
+    color:var(--subtext);
+  }
+  .pill{
+    display:inline-block;
+    margin-top:10px;
+    padding:4px 14px;
+    border-radius:12px;
+    background:var(--accent-bg);
+    color:var(--accent);
+    font-size:10px;
+    font-weight:700;
+  }
+  .dims{
+    display:flex;
+    gap:10px;
+    flex:1;
+    flex-wrap:wrap;
+  }
+  .dim-box{
+    background:var(--panel);
+    border-radius:6px;
+    padding:12px 12px 10px;
+    flex:1;
+    min-width:100px;
+  }
+  .dim-box .val{ font-size:17px; font-weight:700; color:var(--ink); }
+  .dim-box .lab{ font-size:9px; color:var(--subtext); margin-top:4px; }
+
+  .summary-text{
+    font-size:11px;
+    line-height:1.5;
+    color:var(--text);
+    max-width:65%;
+    margin-bottom:26px;
+  }
+
+  hr.rule{
+    border:none;
+    border-top:1px solid var(--line);
+    margin:22px 0;
+  }
+
+  section h2{
+    font-size:13px;
+    color:var(--ink);
+    margin:0 0 2px;
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-weight:700;
+  }
+  section h2 .tag{
+    font-size:8.5px;
+    font-weight:400;
+    letter-spacing:.05em;
+    color:var(--muted);
+    text-transform:uppercase;
+  }
+
+  table.skills{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:14px;
+    font-size:10.5px;
+  }
+  table.skills th{
+    text-align:left;
+    font-size:8.5px;
+    color:var(--muted);
+    letter-spacing:.04em;
+    font-weight:700;
+    border-bottom:1px solid var(--line);
+    padding-bottom:6px;
+  }
+  table.skills td{
+    padding:9px 0;
+    border-bottom:1px solid #F0F1F3;
+  }
+  table.skills td.level{ font-weight:700; }
+  .note{
+    font-size:8.5px;
+    color:var(--muted);
+    margin-top:8px;
+  }
+
+  .growth-row{
+    display:flex;
+    gap:16px;
+    margin-top:14px;
+  }
+  .growth-card{
+    flex:0 0 62%;
+    background:var(--panel);
+    border-radius:8px;
+    padding:16px;
+  }
+  .growth-card .kicker{
+    font-size:8.5px;
+    font-weight:700;
+    letter-spacing:.05em;
+    color:var(--amber);
+    margin-bottom:8px;
+  }
+  .growth-card .title{
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .growth-card .body{
+    font-size:9.5px;
+    color:var(--subtext);
+    line-height:1.5;
+  }
+  .reassess-card{
+    flex:1;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:16px;
+  }
+  .reassess-card .kicker{
+    font-size:8.5px;
+    font-weight:700;
+    letter-spacing:.05em;
+    color:var(--subtext);
+    margin-bottom:8px;
+  }
+  .reassess-card .title{
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .reassess-card .foot{
+    font-size:8.5px;
+    color:var(--muted);
+    font-style:italic;
+  }
+
+  .decision-intro{
+    font-size:10px;
+    color:var(--subtext);
+    line-height:1.5;
+    max-width:90%;
+    margin-bottom:20px;
+  }
+  table.evidence{
+    width:100%;
+    border-collapse:collapse;
+    font-size:9px;
+    margin-top:12px;
+  }
+  table.evidence th{
+    text-align:left;
+    font-size:8px;
+    color:var(--muted);
+    letter-spacing:.03em;
+    font-weight:700;
+    border-bottom:1px solid var(--line);
+    padding-bottom:6px;
+  }
+  table.evidence td{
+    vertical-align:top;
+    padding:10px 8px 10px 0;
+    border-bottom:1px solid #F0F1F3;
+    line-height:1.4;
+  }
+  table.evidence td.competency{ font-weight:700; width:16%; }
+  table.evidence td.score{ width:7%; font-weight:700; }
+  table.evidence td.readiness{ width:11%; font-weight:700; color:var(--accent); }
+  table.evidence td.readiness.at-bar{ color:var(--amber); }
+  table.evidence td.evidence-col{ width:33%; color:var(--subtext); }
+  table.evidence td.implication{ color:var(--subtext); }
+
+  .pattern-row{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+  }
+  .pattern-box{
+    flex:1;
+    background:var(--panel-2);
+    border-radius:6px;
+    padding:12px 10px;
+  }
+  .pattern-box .val{ font-size:15px; font-weight:700; color:var(--ink); }
+  .pattern-box .lab{ font-size:8px; color:var(--subtext); margin-top:6px; }
+  .pattern-box .sub{ font-size:7.5px; color:var(--muted); font-style:italic; margin-top:16px; }
+
+  .action-row{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+  }
+  .action-box{
+    flex:1;
+    background:var(--panel);
+    border-radius:6px;
+    padding:12px;
+  }
+  .action-box .tag{ font-size:7.5px; font-weight:700; letter-spacing:.04em; color:var(--accent); margin-bottom:6px; }
+  .action-box .title{ font-size:10px; font-weight:700; color:var(--ink); margin-bottom:6px; }
+  .action-box .body{ font-size:8px; color:var(--subtext); line-height:1.4; }
+  .gate-box{
+    flex:1;
+    background:var(--accent-bg);
+    border-radius:6px;
+    padding:12px;
+  }
+  .gate-box .tag{ font-size:7.5px; font-weight:700; letter-spacing:.04em; color:var(--accent); margin-bottom:6px; }
+  .gate-box .title{ font-size:10.5px; font-weight:700; color:var(--ink); margin-bottom:10px; }
+  .gate-box .threshold{ font-size:13px; font-weight:700; color:var(--accent); }
+
+  .decision-box{
+    background:var(--ink);
+    color:#fff;
+    border-radius:8px;
+    padding:14px 18px;
+    margin-top:14px;
+  }
+  .decision-box .headline{ font-size:14px; font-weight:700; }
+  .decision-box .sub{ font-size:9.5px; color:#D1D5DB; margin-top:6px; }
+
+  .closing-cols{
+    display:flex;
+    gap:24px;
+    margin-top:18px;
+  }
+  .closing-cols .col{ flex:1; }
+  .closing-cols h3{
+    font-size:9px;
+    letter-spacing:.03em;
+    color:var(--subtext);
+    margin:0 0 6px;
+  }
+  .closing-cols p{
+    font-size:8.5px;
+    color:var(--subtext);
+    line-height:1.5;
+    margin:0;
+  }
+
+  input[type=text], textarea{
+    font-family:inherit;
+    border:none;
+    border-bottom:1px dashed #C7CBD1;
+    background:transparent;
+    color:var(--text);
+    width:100%;
+    font-size:inherit;
+  }
+  textarea{ resize:vertical; }
+
+  @page{
+    size: letter;
+    margin: 0;
+  }
+
+  @media print{
+    html, body{
+      background:#fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page{
+      margin:0;
+      box-shadow:none;
+      break-after: page;
+      page-break-after: always;
+    }
+    .page:last-child{
+      break-after: auto;
+      page-break-after: auto;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="report-header">
+    <div class="brand">havet AI</div>
+    <div class="page-label">CANDIDATE READINESS REPORT · 01 / 02</div>
+  </div>
+
+  <p class="eyebrow">R E A D I N E S S&nbsp; P R O F I L E</p>
+  <h1 class="name">{{ display_name|e }}</h1>
+  <p class="subline">{{ profile_line|e }}</p>
+
+  <div class="overall-label">OVERALL READINESS</div>
+  <div class="overall-row">
+    <div class="score-block">
+      <span class="score-number">{{ overall_score_text|e }}<span class="max"> / {{ scale_max_text|e }}</span></span><br>
+      <span class="pill">{{ overall_level|e }}</span>
+    </div>
+    <div class="dims">
+      {% for dim in summary_dimensions %}
+      <div class="dim-box">
+        <div class="val">{{ dim.score_text|e }}</div>
+        <div class="lab">{{ dim.label|e }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <p class="summary-text">{{ overall_summary|e }}</p>
+
+  <hr class="rule">
+
+  <section>
+    <h2>01&nbsp; Skills, scored on evidence <span class="tag">{{ skills_tag|e }}</span></h2>
+    <table class="skills">
+      <tr><th>SKILL</th><th>SCORE 1 - 5</th><th>LEVEL</th></tr>
+      {% for skill in skills %}
+      <tr>
+        <td><b>{{ skill.name|e }}</b></td>
+        <td>{{ skill.score_text|e }}</td>
+        <td class="level">{{ skill.level|e }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <p class="note">Scale: 1 emerging - 2 developing - 3 proficient - 4 strong - 5 advanced. Evidence for every score is on page 2.</p>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <h2>02&nbsp; What they are building next</h2>
+    <div class="growth-row">
+      <div class="growth-card">
+        <div class="kicker">ACTIVE GROWTH AREA</div>
+        <div class="title">{{ growth_title|e }}</div>
+        <div class="body">{{ growth_body|e }}</div>
+      </div>
+      <div class="reassess-card">
+        <div class="kicker">RE-ASSESSMENT DUE</div>
+        <div class="title">{{ reassessment_due|e }}</div>
+        <div class="foot">Scores are a point in time, not a fixed label.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="report-footer">
+    <span>HAVET AI · READINESS INTELLIGENCE</span>
+    <span>ASSESSED {{ footer_assessed|e }} · PROFILE {{ candidate_id|e }}</span>
+  </div>
+</div>
+
+<div class="page">
+  <div class="report-header">
+    <div class="brand">havet AI</div>
+    <div class="page-label">{{ display_name|e }} · 02 / 02</div>
+  </div>
+
+  <h1 class="name" style="font-size:20px;">{{ display_name|e }} · Decision detail</h1>
+  <p class="decision-intro">{{ decision_intro|e }}</p>
+
+  <section>
+    <h2>03&nbsp; Role-specific evidence <span class="tag">Threshold: {{ threshold_score_text|e }} · {{ threshold_summary_text|e }}</span></h2>
+    <table class="evidence">
+      <tr>
+        <th>COMPETENCY</th><th>SCORE</th><th>READINESS</th><th>EVIDENCE</th><th>IMPLICATION</th>
+      </tr>
+      {% for row in evidence_rows %}
+      <tr>
+        <td class="competency">{{ row.name|e }}</td>
+        <td class="score">{{ row.score_text|e }}</td>
+        <td class="readiness {{ row.readiness_class|e }}">{{ row.readiness_text|e }}</td>
+        <td class="evidence-col">{{ row.evidence_text|e }}</td>
+        <td class="implication">{{ row.implication_text|e }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </section>
+
+  <section>
+    <h2 style="margin-top:22px;">04&nbsp; Readiness pattern <span class="tag">Supporting context across key dimensions</span></h2>
+    <div class="pattern-row">
+      {% for dim in pattern_dimensions %}
+      <div class="pattern-box">
+        <div class="val">{{ dim.score_text|e }}</div>
+        <div class="lab">{{ dim.label|e }}</div>
+        <div class="sub">{{ dim.level|e }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section>
+    <h2 style="margin-top:22px;">05&nbsp; Next best action <span class="tag">Turn the gap into proof</span></h2>
+    <div class="action-row">
+      {% for card in action_cards %}
+      {% if card.kind == 'gate' %}
+      <div class="gate-box">
+        <div class="tag">{{ card.tag|e }}</div>
+        <div class="title">{{ card.title|e }}</div>
+        <div class="threshold">{{ card.threshold|e }}</div>
+      </div>
+      {% else %}
+      <div class="action-box">
+        <div class="tag">{{ card.tag|e }}</div>
+        <div class="title">{{ card.title|e }}</div>
+        <div class="body">{{ card.body|e }}</div>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+
+  <section>
+    <h2 style="margin-top:22px;">06&nbsp; Final decision <span class="tag">Keep the human decision visible</span></h2>
+    <div class="decision-box">
+      <div class="headline">{{ decision_headline|e }}</div>
+      <div class="sub">{{ decision_subtitle|e }}</div>
+    </div>
+
+    <div class="closing-cols">
+      <div class="col">
+        <h3>RESPONSIBLE USE</h3>
+        <p>This is contextual decision support, not a permanent label or guarantee. Keep human review, consent, and evidence provenance visible.</p>
+      </div>
+      <div class="col">
+        <h3>EVIDENCE PROVENANCE</h3>
+        <p>{{ evidence_provenance|e }}</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="report-footer">
+    <span>ASSESSMENT · {{ footer_assessed|e }} · Reassessment due {{ reassessment_due|e }}</span>
+    <span>SOURCE RECORDS · {{ source_record|e }}</span>
+  </div>
+</div>
+
+</body>
+</html>

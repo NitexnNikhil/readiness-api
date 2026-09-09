@@ -1,0 +1,409 @@
+{
+  "common_intelligence": {
+    "candidate_profile": {
+      "candidate_id": "CAND-001",
+      "name": "Aarti Deshmukh",
+      "email": "aarti@example.com",
+      "phone": "+91XXXXXXXXXX",
+      "location": "Pune, India",
+      "profile_summary": "Computer Science student with experience in backend development and database-driven projects."
+    },
+
+    "education": [
+      {
+        "degree": "Bachelor of Engineering",
+        "field_of_study": "Computer Science Engineering",
+        "institution": "VIT Pune",
+        "academic_year": "Final year",
+        "graduation_year": "2027",
+        "score": "8.4 CGPA",
+        "score_type": "CGPA"
+      }
+    ],
+
+    "assessment": {
+      "assessment_type": "resume_based",
+      "assessment_date": "2026-09-09",
+      "source": "resume",
+      "reassessment_due": null
+    },
+
+    "evidence": [
+      {
+        "source": "resume",
+        "section": "Projects",
+        "evidence": "Developed a REST API using Flask for a backend application.",
+        "related_skill": "APIs & web fundamentals",
+        "related_competency": "Backend development"
+      },
+      {
+        "source": "resume",
+        "section": "Technical Skills",
+        "evidence": "Java, Python, SQL, Git and REST APIs.",
+        "related_skill": "Programming proficiency",
+        "related_competency": "Technical fundamentals"
+      },
+      {
+        "source": "resume",
+        "section": "Projects",
+        "evidence": "Designed database schemas and implemented SQL queries.",
+        "related_skill": "Databases & SQL",
+        "related_competency": "Technical fundamentals"
+      }
+    ],
+
+    "skills": [
+      {
+        "skill_id": "programming_proficiency",
+        "skill_name": "Programming proficiency",
+        "category": "Programming",
+        "evidence": [
+          "Java",
+          "Python",
+          "Backend development projects"
+        ]
+      },
+      {
+        "skill_id": "databases_sql",
+        "skill_name": "Databases & SQL",
+        "category": "Database",
+        "evidence": [
+          "SQL",
+          "Database schema design"
+        ]
+      },
+      {
+        "skill_id": "apis_web_fundamentals",
+        "skill_name": "APIs & web fundamentals",
+        "category": "Backend",
+        "evidence": [
+          "REST API project",
+          "Flask"
+        ]
+      },
+      {
+        "skill_id": "dsa_problem_solving",
+        "skill_name": "DSA & problem solving",
+        "category": "Problem Solving",
+        "evidence": [
+          "DSA listed in technical skills"
+        ]
+      },
+      {
+        "skill_id": "version_control_testing",
+        "skill_name": "Version control & testing",
+        "category": "Engineering Practices",
+        "evidence": [
+          "Git",
+          "GitHub"
+        ]
+      },
+      {
+        "skill_id": "oop_service_design",
+        "skill_name": "OOP & service design",
+        "category": "Software Design",
+        "evidence": [
+          "Object-oriented programming listed in skills"
+        ]
+      }
+    ],
+
+    "competencies": [
+      {
+        "competency_id": "programming_proficiency",
+        "competency_name": "Programming proficiency",
+        "evidence": [
+          "Java and Python projects",
+          "Backend implementation experience"
+        ],
+        "score": 4.0,
+        "level": "STRONG"
+      },
+      {
+        "competency_id": "databases_sql",
+        "competency_name": "Databases & SQL",
+        "evidence": [
+          "SQL projects",
+          "Database schema experience"
+        ],
+        "score": 4.0,
+        "level": "STRONG"
+      },
+      {
+        "competency_id": "apis_web_fundamentals",
+        "competency_name": "APIs & web fundamentals",
+        "evidence": [
+          "REST API project",
+          "Flask experience"
+        ],
+        "score": 3.5,
+        "level": "PROFICIENT"
+      },
+      {
+        "competency_id": "dsa_problem_solving",
+        "competency_name": "DSA & problem solving",
+        "evidence": [
+          "DSA mentioned in resume"
+        ],
+        "score": 3.0,
+        "level": "PROFICIENT"
+      },
+      {
+        "competency_id": "version_control_testing",
+        "competency_name": "Version control & testing",
+        "evidence": [
+          "Git/GitHub experience"
+        ],
+        "score": 3.0,
+        "level": "PROFICIENT"
+      },
+      {
+        "competency_id": "oop_service_design",
+        "competency_name": "OOP & service design",
+        "evidence": [
+          "OOP listed in technical skills"
+        ],
+        "score": 3.0,
+        "level": "PROFICIENT"
+      }
+    ],
+
+    "scores": {
+      "scale": {
+        "minimum": 1,
+        "maximum": 5
+      },
+      "competency_scores": {
+        "programming_proficiency": 4.0,
+        "databases_sql": 4.0,
+        "apis_web_fundamentals": 3.5,
+        "dsa_problem_solving": 3.0,
+        "version_control_testing": 3.0,
+        "oop_service_design": 3.0
+      },
+      "overall_score": 3.4,
+      "percentile": null,
+      "cohort_comparison": null
+    },
+
+    "readiness_dimensions": {
+      "technical_fundamentals": {
+        "score": 3.7,
+        "level": "STRONG",
+        "evidence": [
+          "Programming, SQL and backend experience"
+        ]
+      },
+      "project_readiness": {
+        "score": 3.5,
+        "level": "STRONG",
+        "evidence": [
+          "Multiple technical projects"
+        ]
+      },
+      "learning_agility": {
+        "score": null,
+        "level": "NOT ASSESSED",
+        "evidence": []
+      },
+      "communication": {
+        "score": null,
+        "level": "NOT ASSESSED",
+        "evidence": []
+      },
+      "role_fit": {
+        "score": 3.5,
+        "level": "STRONG",
+        "evidence": [
+          "Backend development experience"
+        ]
+      }
+    },
+
+    "overall_readiness": {
+      "score": 3.4,
+      "scale_max": 5,
+      "level": "HIGH READINESS",
+      "summary": "Strong technical foundation with relevant backend and database project experience.",
+      "confidence": "MEDIUM"
+    }
+  },
+
+  "persona_specific_intelligence": {
+    "candidate_view": {
+      "strengths": [
+        {
+          "area": "Programming",
+          "evidence": "Java and Python project experience.",
+          "summary": "Good programming foundation."
+        },
+        {
+          "area": "Databases & SQL",
+          "evidence": "SQL and database schema experience.",
+          "summary": "Strong database foundation."
+        }
+      ],
+
+      "development_areas": [
+        {
+          "area": "DSA & problem solving",
+          "reason": "Resume evidence is limited to listed skills/projects.",
+          "priority": "MEDIUM"
+        },
+        {
+          "area": "Testing",
+          "reason": "Limited explicit testing evidence in the resume.",
+          "priority": "MEDIUM"
+        }
+      ],
+
+      "growth_area": {
+        "area": "Testing and software engineering practices",
+        "reason": "Resume shows Git experience but limited explicit testing/CI evidence.",
+        "current_state": "Basic engineering workflow exposure"
+      },
+
+      "learning_recommendations": [
+        {
+          "recommendation": "Build automated testing and CI workflows",
+          "reason": "Strengthens software engineering readiness.",
+          "related_area": "Version control & testing"
+        }
+      ],
+
+      "next_best_action": {
+        "action": "Build a backend project with automated tests and CI",
+        "reason": "Converts resume evidence into stronger proof of engineering ownership.",
+        "expected_outcome": "Demonstrable backend engineering workflow."
+      },
+
+      "progress": {
+        "available": false,
+        "previous_score": null,
+        "current_score": 3.4,
+        "score_change": null,
+        "summary": "No previous assessment available."
+      },
+
+      "reassessment": {
+        "due_date": null,
+        "areas_to_reassess": [
+          "Testing",
+          "DSA",
+          "Backend design"
+        ],
+        "reason": "Validate skills through direct assessment."
+      }
+    },
+
+    "tpo_view": {
+      "placement_readiness": {
+        "score": 3.4,
+        "level": "HIGH READINESS",
+        "summary": "Good technical foundation for entry-level backend opportunities."
+      },
+
+      "role_fit": {
+        "target_role": "Backend Developer",
+        "score": 3.5,
+        "level": "STRONG",
+        "summary": "Resume aligns with backend development requirements."
+      },
+
+      "hiring_gaps": [
+        {
+          "area": "Testing and CI",
+          "reason": "Limited explicit evidence",
+          "priority": "MEDIUM"
+        }
+      ],
+
+      "placement_risks": [
+        {
+          "risk": "Limited direct assessment evidence",
+          "reason": "Current readiness is derived from resume evidence.",
+          "severity": "MEDIUM"
+        }
+      ],
+
+      "success_gate": {
+        "required": false,
+        "competency": "",
+        "minimum_score": null,
+        "current_score": null,
+        "status": "NOT_APPLICABLE_FOR_RESUME_ONLY"
+      },
+
+      "recommendation": {
+        "decision": "PROCEED WITH ASSESSMENT",
+        "reason": "Resume indicates good potential but direct technical assessment is recommended.",
+        "conditions": [
+          "Validate technical skills through coding assessment",
+          "Validate communication through interview"
+        ]
+      }
+    },
+
+    "recruiter_employer_view": {
+      "role_fit": {
+        "target_role": "Backend Developer",
+        "score": 3.5,
+        "level": "STRONG",
+        "summary": "Relevant backend, programming and database experience."
+      },
+
+      "required_competencies": [
+        {
+          "competency": "Programming proficiency",
+          "required_score": 3.0,
+          "candidate_score": 4.0,
+          "status": "MEETS"
+        },
+        {
+          "competency": "Databases & SQL",
+          "required_score": 3.0,
+          "candidate_score": 4.0,
+          "status": "MEETS"
+        },
+        {
+          "competency": "APIs & web fundamentals",
+          "required_score": 3.0,
+          "candidate_score": 3.5,
+          "status": "MEETS"
+        }
+      ],
+
+      "candidate_gaps": [
+        {
+          "competency": "Version control & testing",
+          "score": 3.0,
+          "gap": "Limited explicit testing evidence",
+          "impact": "Should be validated during technical assessment."
+        }
+      ],
+
+      "hiring_readiness": {
+        "score": 3.4,
+        "level": "HIGH READINESS",
+        "summary": "Promising candidate based on resume evidence."
+      },
+
+      "success_gate": {
+        "required": false,
+        "competency": "",
+        "minimum_score": null,
+        "current_score": null,
+        "status": "NOT_APPLICABLE_FOR_RESUME_ONLY"
+      },
+
+      "recommendation": {
+        "decision": "CONSIDER FOR TECHNICAL SCREEN",
+        "reason": "Resume demonstrates relevant technical foundation.",
+        "conditions": [
+          "Validate coding ability",
+          "Validate system/design fundamentals"
+        ]
+      }
+    }
+  }
+}
