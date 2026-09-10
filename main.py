@@ -262,7 +262,12 @@ def build_display_context(context):
         readiness_text = get_readiness(item.get("score"))
         evidence_text = join_nonempty(item.get("evidence", []), "; ") or "No evidence listed."
         gap = candidate_gap_map.get(competency_name, {})
-        implication_text = gap.get("impact") or gap.get("gap") or "Supporting signal for the report."
+        implication_text = (
+            item.get("implication")
+            or gap.get("impact")
+            or gap.get("gap")
+            or "Supporting signal for the report."
+        )
 
         skills.append(
             {
