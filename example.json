@@ -231,8 +231,10 @@
         "oop_service_design": 4.0
       },
       "overall_score": 4.25,
-      "percentile": null,
-      "cohort_comparison": null
+      "percentile": 81,
+      "cohort_comparison": 0.2,
+      "skills_count": 6,
+      "sources_count": 4
     },
 
     "readiness_dimensions": {

@@ -132,13 +132,52 @@ def build_display_context(context):
     competencies = context["competencies"]
     dimensions = context["dimensions"]
     overall = context["overall"]
+    scores = context.get("scores", {})
     candidate_view = context["candidate_view"]
     tpo_view = context["tpo_view"]
 
     assessment_date = assessment.get("assessment_date") or "N/A"
     assessment_source = str(assessment.get("source") or assessment.get("assessment_type") or "assessment")
     assessment_source_label = assessment_source.replace("_", " ").upper()
-    skills_tag = f"{assessment_source_label} · {len(competencies)} SKILLS · {assessment_date}"
+    percentile = scores.get("percentile")
+    cohort_comparison = scores.get("cohort_comparison")
+    skills_count = scores.get("skills_count")
+    sources_count = scores.get("sources_count")
+    if skills_count is None:
+        skills_count = len(competencies)
+    skills_count_text = f"{int(skills_count)} SKILLS" if isinstance(skills_count, (int, float)) else f"{skills_count} SKILLS"
+
+    def ordinal_suffix(value: int) -> str:
+        if 10 <= value % 100 <= 20:
+            return "TH"
+        if value % 10 == 1:
+            return "ST"
+        if value % 10 == 2:
+            return "ND"
+        if value % 10 == 3:
+            return "RD"
+        return "TH"
+
+    tag_parts = []
+    if isinstance(percentile, (int, float)):
+        percentile_int = int(percentile)
+        tag_parts.append(f"{percentile_int}{ordinal_suffix(percentile_int)} PERCENTILE")
+    elif assessment_source_label:
+        tag_parts.append(assessment_source_label)
+
+    if isinstance(cohort_comparison, (int, float)):
+        sign = "+" if cohort_comparison >= 0 else ""
+        tag_parts.append(f"{sign}{cohort_comparison:g} VS COHORT")
+
+    tag_parts.append(skills_count_text)
+
+    if sources_count is not None:
+        sources_count_text = f"{int(sources_count)} SOURCES" if isinstance(sources_count, (int, float)) else f"{sources_count} SOURCES"
+        tag_parts.append(sources_count_text)
+    elif assessment_date and assessment_date != "N/A":
+        tag_parts.append(assessment_date)
+
+    skills_tag = " · ".join(tag_parts)
 
     profile_bits = []
     if education:
@@ -808,6 +847,7 @@ async def generate_readiness_report(
         "education": education,
         "assessment": assessment,
         "competencies": competencies,
+        "scores": common.get("scores", {}),
         "dimensions": dimensions,
         "overall": overall,
         "candidate_view": candidate_view,
