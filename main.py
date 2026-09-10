@@ -109,6 +109,25 @@ def short_display_name(full_name):
     return f"{first_name} {last_initial}"
 
 
+def pick_communication_dimension(common: Dict[str, Any], dimensions: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Prefer the explicit communication block, but gracefully fall back to
+    any legacy or alternate nesting used by the payload.
+    """
+    candidates = [
+        common.get("communication"),
+        dimensions.get("communication"),
+        common.get("readiness_dimensions", {}).get("communication"),
+        common.get("scores", {}).get("communication"),
+    ]
+
+    for candidate in candidates:
+        if isinstance(candidate, dict) and candidate:
+            return candidate
+
+    return {}
+
+
 def find_browser_executable():
     candidates = [
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -803,6 +822,8 @@ async def generate_readiness_report(
         {}
     )
 
+    communication = pick_communication_dimension(common, dimensions)
+
     candidate_view = persona.get(
         "candidate_view",
         {}
@@ -858,7 +879,7 @@ async def generate_readiness_report(
         "candidate_view": candidate_view,
         "tpo_view": tpo_view,
         "recruiter_view": persona.get("recruiter_employer_view", {}),
-        "communication": common.get("communication", {}),
+        "communication": communication,
         "common_threshold": 3.0,
     }
 
